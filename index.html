@@ -69,6 +69,38 @@ button{font:inherit;color:inherit;cursor:pointer}
 @media(max-width:700px){.tree-grid{grid-template-columns:repeat(5,minmax(118px,1fr));}.modal{width:calc(100% - 16px)}}
 @media(max-width:930px){.brand{min-width:160px}.brand-name{font-size:19px}.nav button{padding:9px 8px;font-size:10px}.left-stack{width:210px}.right-stack{width:225px}.bottom-inventory{width:calc(100% - 450px);min-width:360px}}
 @media(max-width:700px){body{overflow:auto}#app{height:auto;min-height:100vh}.topbar{height:auto;min-height:60px;flex-wrap:wrap}.brand{flex:1}.nav{order:3;flex-basis:100%;overflow-x:auto}.main{height:850px;flex:none}.left-stack{width:180px}.right-stack{width:180px;top:310px}.skills-summary{display:none}.bottom-inventory{width:calc(100% - 20px);min-width:0;overflow-x:auto}.status{bottom:85px}.activity{top:55%}.tree-grid{grid-template-columns:1fr 1fr}}
+
+/* IRONWORKS v0.2 — HUD inspired by the approved gameplay reference */
+.topbar{display:none}
+.main{background:#263026}
+.left-stack{left:14px;top:14px;width:244px;gap:10px}
+.left-stack .player-card{background:linear-gradient(135deg,#171b17f2,#292219ed);border-color:#b28a48}
+.left-stack .objectives{background:linear-gradient(135deg,#171b17f2,#292219ed);border-color:#b28a48}
+.right-stack{display:none}
+.side-toggle{display:none}
+.bottom-inventory{display:none}
+.player-card .avatar{width:64px;height:64px;flex-basis:64px;background-size:cover;background-position:center 12%}
+.player-name{font-size:9px;letter-spacing:1px}
+.objectives{padding:13px}
+.objectives .panel-title{font-size:15px}
+.objective{font-size:11px;margin:11px 0}
+.top-resource-bar{position:absolute;z-index:8;right:16px;top:14px;display:flex;align-items:center;gap:5px;padding:7px 9px;background:linear-gradient(180deg,#171b18f5,#282319f2);border:1px solid #a98142;border-radius:11px;box-shadow:0 7px 20px #0009}
+.top-resource{min-width:76px;display:flex;align-items:center;justify-content:center;gap:7px;padding:3px 9px;border-right:1px solid #5e5039}
+.top-resource:last-child{border-right:0}
+.top-resource .ri{font-size:22px;filter:drop-shadow(0 2px 2px #000)}
+.top-resource strong{font-size:15px;color:#f6e8c8;font-weight:900;font-variant-numeric:tabular-nums}
+.top-resource small{display:block;color:#b9aa8d;font-size:8px;letter-spacing:.6px;text-transform:uppercase}
+.bottom-nav{position:absolute;z-index:9;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:7px;padding:7px;background:linear-gradient(180deg,#171a16ed,#292319f5);border:1px solid #a98142;border-radius:13px;box-shadow:0 8px 24px #000a}
+.bottom-nav button{width:88px;height:76px;border:1px solid #72552f;border-radius:9px;background:linear-gradient(155deg,#3a3428,#171a16);color:#e9d5a6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-weight:800;font-size:10px;transition:.15s}
+.bottom-nav button .nav-icon{font-size:25px;line-height:1.1;color:#f3c36a;text-shadow:0 2px 6px #000}
+.bottom-nav button:hover,.bottom-nav button.active{border-color:#ffd16b;background:linear-gradient(155deg,#76501f,#302315);box-shadow:0 0 15px #d99b3e66;color:#fff0c7;transform:translateY(-2px)}
+.bottom-nav button.active .nav-icon{color:#ffe19a}
+.bottom-nav button .nav-label{white-space:nowrap}
+.status{bottom:102px;left:14px;max-width:250px;background:#151a16eF;border-color:#9e7941}
+.toast{right:18px;bottom:105px}
+.activity{top:56%;}
+@media(max-width:850px){.left-stack{width:205px}.top-resource-bar{right:8px;top:8px;gap:0;padding:5px}.top-resource{min-width:58px;padding:2px 5px}.top-resource .ri{font-size:17px}.top-resource strong{font-size:12px}.bottom-nav{bottom:7px;gap:4px;padding:5px}.bottom-nav button{width:67px;height:65px;font-size:9px}.bottom-nav button .nav-icon{font-size:21px}}
+@media(max-width:600px){.left-stack{width:min(190px,55vw);top:8px;left:8px}.left-stack .player-card{padding:7px}.player-card .avatar{width:44px;height:48px;flex-basis:44px}.objectives{padding:8px}.objectives .panel-title{font-size:12px}.objective{font-size:9px;margin:8px 0}.top-resource-bar{left:8px;right:8px;top:auto;bottom:88px;justify-content:space-around}.top-resource{flex:1;min-width:0}.top-resource .ri{font-size:16px}.top-resource strong{font-size:11px}.bottom-nav{width:calc(100% - 12px);justify-content:space-between}.bottom-nav button{flex:1;width:auto;height:62px}.status{bottom:160px;left:8px;max-width:190px}.activity{width:170px}}
 </style>
 </head>
 <body>
@@ -79,6 +111,19 @@ button{font:inherit;color:inherit;cursor:pointer}
  <div class="top-actions"><button class="top-action" id="soundBtn" title="Som ligado/desligado">🔊</button><button class="top-action" id="saveBtn" title="Salvar">▣</button><button class="top-action" id="resetBtn" title="Novo jogo">⟳</button></div>
 </header>
 <main class="main">
+ <div class="top-resource-bar" aria-label="Recursos armazenados">
+  <div class="top-resource"><span class="ri">🪨</span><div><strong id="topOre">0</strong><small>Minério</small></div></div>
+  <div class="top-resource"><span class="ri">⚙️</span><div><strong id="topScrap">0</strong><small>Sucata</small></div></div>
+  <div class="top-resource"><span class="ri">🔩</span><div><strong id="topParts">0</strong><small>Peças</small></div></div>
+  <div class="top-resource"><span class="ri">☣️</span><div><strong id="topWaste">0</strong><small>Resíduos</small></div></div>
+ </div>
+ <nav class="bottom-nav" aria-label="Navegação principal">
+  <button class="active" data-action="Mapa"><span class="nav-icon">⛏</span><span class="nav-label">Coleta</span></button>
+  <button data-action="Fabricação"><span class="nav-icon">🏭</span><span class="nav-label">Produção</span></button>
+  <button data-action="Base"><span class="nav-icon">⚡</span><span class="nav-label">Gerador</span></button>
+  <button data-action="Habilidades"><span class="nav-icon">♧</span><span class="nav-label">Habilidades</span></button>
+  <button data-action="Equipamentos"><span class="nav-icon">🎒</span><span class="nav-label">Inventário</span></button>
+ </nav>
  <canvas id="world"></canvas><button class="side-toggle left" id="toggleLeft" type="button" aria-label="Recolher painel esquerdo">‹</button><button class="side-toggle right" id="toggleRight" type="button" aria-label="Recolher painel direito">›</button><div class="vignette"></div>
  <section class="hud left-stack">
   <div class="panel player-card"><div class="avatar"></div><div style="flex:1;min-width:0"><div class="player-name">TRABALHADOR INDUSTRIAL</div><div class="level-line">Nível <span id="playerLevel">1</span> <span class="muted">• <span id="playerXp">0</span> / <span id="playerNeed">350</span> XP</span></div><div class="progress"><span id="playerBar"></span></div><div class="muted" style="margin-top:5px;color:#ffd06b">★ <b id="skillPoints">1</b> ponto(s) de habilidade</div></div></div>
@@ -317,6 +362,7 @@ function tick(now){
  if(player.phase!=="idle"){const px=player.x*worldW/1280,py=player.y*worldH/720;$("activity").style.left=Math.max(100,Math.min(worldW-100,px))+"px";$("activity").style.top=Math.max(65,py-118)+"px";}draw();requestAnimationFrame(tick);
 }
 function renderResources(){
+ $("topOre").textContent=state.resources["Minério de Ferro"]||0;$("topScrap").textContent=state.resources["Sucata"]||0;$("topParts").textContent=(state.resources["Componentes"]||0)+(state.resources["Peças"]||0)+(state.resources["Engrenagens"]||0);$("topWaste").textContent=state.resources["Resíduo"]||0;
  const tray=$("resourceTray");tray.innerHTML="";const icons={"Minério de Ferro":"🪨","Sucata":"⚙","Resíduo":"☣","Componentes":"🔩","Peças":"🧰","Engrenagens":"⚙"};let weight=0;
  Object.entries(state.resources).forEach(([name,n])=>{weight+=n;const div=document.createElement("div");div.className="resource";div.innerHTML=`<span class="emoji">${icons[name]||"⚙"}</span><span class="amount">${n}</span><div class="name">${name}</div>`;tray.appendChild(div);});
  $("weight").textContent=weight;
@@ -411,6 +457,7 @@ canvas.addEventListener("click",e=>{
  if(dist<65){startAction(nearest);}else setStatus("Clique em um recurso destacado ou no gerador ⚡ para interagir.");
 });
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>openModal(b.dataset.tab)));
+document.querySelectorAll(".bottom-nav button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".bottom-nav button").forEach(x=>x.classList.toggle("active",x===b));openModal(b.dataset.action);}));
 const toggleLeft=$("toggleLeft"),toggleRight=$("toggleRight");
 if(toggleLeft)toggleLeft.addEventListener("click",()=>{const el=document.querySelector(".left-stack");el.classList.toggle("collapsed");toggleLeft.textContent=el.classList.contains("collapsed")?"›":"‹";});
 if(toggleRight)toggleRight.addEventListener("click",()=>{const el=document.querySelector(".right-stack");el.classList.toggle("collapsed");toggleRight.textContent=el.classList.contains("collapsed")?"‹":"›";});
