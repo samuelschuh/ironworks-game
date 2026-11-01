@@ -34,7 +34,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .full-btn{width:100%;border:1px solid #9a753c;background:linear-gradient(#58401f,#302619);border-radius:6px;padding:8px;font-size:9px;font-weight:800;margin-top:6px}.full-btn:hover{filter:brightness(1.25)}
 .bottom-inventory{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:5;width:min(720px,calc(100% - 530px));min-width:400px;padding:7px 9px;display:flex;gap:7px;align-items:center}
 .weight{min-width:68px;border-right:1px solid #675333;padding-right:8px;color:var(--gold);font-size:10px;font-weight:800}.resource{min-width:70px;text-align:center;border-right:1px solid #514633;padding:1px 4px}.resource .emoji{font-size:18px;display:block}.resource .amount{font-weight:900;color:#ffe0a0;font-size:14px}.resource .name{font-size:9px;color:var(--muted);white-space:nowrap}
-.activity{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);z-index:7;width:min(190px,42%);padding:6px 9px;text-align:center;display:none;pointer-events:none;background:rgba(17,21,17,.91);border-color:#b18a4e}
+.activity{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);z-index:7;width:min(142px,34%);padding:4px 7px;text-align:center;display:none;pointer-events:none;background:rgba(17,21,17,.88);border-color:#a98750}.activity .activity-title{font-size:8px}.activity .activity-sub{font-size:8px;margin:1px 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.activity .progress{height:3px}.activity.show{display:block}
 .activity .activity-title{font-size:10px}.activity .activity-sub{font-size:9px;margin:2px 0 4px}.activity .progress{height:5px}.activity.show{display:block}.activity-title{font-size:12px;font-weight:800}.activity-sub{color:var(--muted);font-size:10px;margin:4px 0 7px}
 .status{position:absolute;bottom:10px;left:12px;z-index:8;padding:8px 10px;font-size:10px;max-width:235px}.toast{position:absolute;right:285px;bottom:100px;z-index:10;padding:9px 12px;border:1px solid #b98a39;background:#171810ee;border-radius:8px;box-shadow:0 8px 24px #0009;font-size:11px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}
 .modal{position:absolute;z-index:15;left:50%;top:50%;transform:translate(-50%,-50%);width:min(700px,calc(100% - 34px));max-height:calc(100% - 40px);overflow:auto;padding:16px;display:none}.modal.show{display:block}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.modal-head h2{margin:0;color:var(--gold);font-size:20px}.close{background:#34291b;border:1px solid #84612f;border-radius:6px;padding:6px 10px;font-size:11px}
@@ -380,35 +380,28 @@ function drawGenerator(){
  ctx.restore();
 }
 function drawTargetMarkers(){
+ const outlines={
+  ore:[[-54,4],[-43,-17],[-28,-29],[-14,-43],[4,-39],[18,-31],[33,-24],[47,-5],[54,9],[43,23],[27,28],[8,34],[-12,31],[-30,25],[-46,17]],
+  scrap:[[-48,10],[-38,-8],[-22,-22],[-5,-28],[13,-22],[28,-16],[46,-3],[51,12],[36,26],[15,30],[-8,27],[-30,23]],
+  waste:[[-36,7],[-27,-11],[-12,-19],[2,-15],[14,-24],[30,-13],[39,3],[30,19],[12,22],[-7,17],[-24,20]],
+  crate:[[-25,-20],[23,-20],[27,17],[12,24],[-25,17]]
+ };
  Object.entries(TASKS).forEach(([key,a])=>{
   if(key==="generator"&&state.objective.generator)return;
-  const p=worldPoint(a.pos),hot=player.target===key;
-  const depleted=key==="generator"?0:Math.min(1,(state.depletion?.[key]||0)/8);
-  const pulse=.5+.5*Math.sin(ambientTime*2.2+a.pos[0]*.01);
-  // Preserve the hand-painted resource artwork already present in the map.
-  // Only add a soft locator glow; never redraw ore/scrap/waste as geometric shapes.
-  if(key!=="generator"&&depleted<1){
-   ctx.save();
-   const isOre=key==="ore";
-   const alpha=(isOre?.28:.12+.12*pulse)*(1-depleted*.8)*(hot?2.1:1);
-   const radius=(isOre?58:hot?44:30)+pulse*(isOre?9:5);
-   const glow=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,radius);
-   glow.addColorStop(0,isOre?`rgba(255,190,75,${alpha})`:`rgba(255,196,103,${alpha})`);
-   glow.addColorStop(.48,isOre?`rgba(255,116,35,${alpha*.65})`:`rgba(222,171,91,${alpha*.45})`);
-   glow.addColorStop(1,"rgba(0,0,0,0)");
-   ctx.fillStyle=glow;ctx.beginPath();ctx.arc(p.x,p.y,radius,0,Math.PI*2);ctx.fill();
-   if(isOre){
-    ctx.globalAlpha=.5+.35*pulse;ctx.strokeStyle="#ffd36b";ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.ellipse(p.x,p.y+5,47+pulse*4,27+pulse*3,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-    ctx.fillStyle="#ffe39a";ctx.font="bold 12px Arial";ctx.textAlign="center";ctx.shadowColor="#ff8b25";ctx.shadowBlur=12;ctx.fillText("MINÉRIO • COLETÁVEL",p.x,p.y-48);
-   }
-   ctx.restore();
-  }
-  if(hot||key==="generator"){
-   ctx.save();ctx.globalAlpha=.9;ctx.fillStyle="#ffe0a0";ctx.font="bold 11px Arial";ctx.textAlign="center";ctx.shadowColor="#eab75a";ctx.shadowBlur=8;
-   ctx.fillText(key==="generator"?"⚡ GERADOR A-03":"COLETANDO",p.x,p.y+43);
-   if(key==="generator"&&!state.objective.generator){ctx.fillStyle="#ffca58";ctx.font="bold 9px Arial";ctx.fillText("RECUPERAR",p.x,p.y+56);}
-   ctx.restore();
-  }
+  if(key==="generator")return;
+  const depleted=Math.min(1,(state.depletion?.[key]||0)/8);
+  if(depleted>=1)return;
+  const p=worldPoint(a.pos),pulse=.5+.5*Math.sin(ambientTime*2.5+a.pos[0]*.01),hot=player.target===key;
+  const shape=outlines[key]||outlines.crate;
+  ctx.save();ctx.translate(p.x,p.y+(key==="ore"?-20:0));
+  // Trace the silhouette of the resource itself, not a locator circle on the floor.
+  const trace=()=>{
+   ctx.beginPath();shape.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();
+  };
+  ctx.globalAlpha=.48+.28*pulse+(hot?.22:0);ctx.shadowColor=key==="ore"?"#ff8b28":"#ffc36a";ctx.shadowBlur=hot?16:10;
+  ctx.strokeStyle=key==="ore"?"#ffbd58":"#f2c77a";ctx.lineWidth=3.2;trace();ctx.stroke();
+  ctx.shadowBlur=3;ctx.globalAlpha=.9;ctx.strokeStyle="#fff0bd";ctx.lineWidth=1;trace();ctx.stroke();
+  ctx.restore();
  });
 }
 function lineLimb(x1,y1,x2,y2,width,color){strokePath([[x1,y1],[x2,y2]],"#201f1a",width+3);strokePath([[x1,y1],[x2,y2]],color,width);}
@@ -438,68 +431,28 @@ function pathIsWalkable(x1,y1,x2,y2){
  return true;
 }
 let workerRig=null;
-function buildWorkerRig(){
- if(!workerSprite.complete||!workerSprite.naturalWidth||workerRig)return;
- const w=workerSprite.naturalWidth,h=workerSprite.naturalHeight;
- const parts={
-  head:[[.34,.00],[.73,.00],[.79,.18],[.72,.29],[.52,.32],[.35,.25]],
-  armBack:[[.19,.22],[.37,.20],[.43,.39],[.40,.59],[.30,.66],[.22,.53]],
-  armFront:[[.65,.25],[.84,.30],[.91,.49],[.86,.64],[.74,.63],[.67,.48]],
-  legBack:[[.25,.55],[.48,.56],[.52,.76],[.47,.98],[.28,.98],[.22,.79]],
-  legFront:[[.43,.56],[.68,.57],[.72,.79],[.70,.98],[.49,.99],[.42,.78]]
- };
- const makeLayer=poly=>{
-  const c=document.createElement("canvas");c.width=w;c.height=h;
-  const q=c.getContext("2d");q.drawImage(workerSprite,0,0);
-  q.globalCompositeOperation="destination-in";q.beginPath();
-  poly.forEach((p,i)=>i?q.lineTo(p[0]*w,p[1]*h):q.moveTo(p[0]*w,p[1]*h));q.closePath();q.fill();
-  return c;
- };
- const base=document.createElement("canvas");base.width=w;base.height=h;
- const b=base.getContext("2d");b.drawImage(workerSprite,0,0);
- b.globalCompositeOperation="destination-out";
- Object.values(parts).forEach(poly=>{b.beginPath();poly.forEach((p,i)=>i?b.lineTo(p[0]*w,p[1]*h):b.moveTo(p[0]*w,p[1]*h));b.closePath();b.fill();});
- workerRig={base,head:makeLayer(parts.head),armBack:makeLayer(parts.armBack),armFront:makeLayer(parts.armFront),legBack:makeLayer(parts.legBack),legFront:makeLayer(parts.legFront)};
-}
-function drawRigPart(layer,w,h,anchorX,anchorY,angle,scale=1){
- ctx.save();ctx.translate(anchorX,anchorY);ctx.rotate(angle);ctx.scale(scale,scale);
- // Keep the layer aligned to the original sprite, rotating only around its joint.
- ctx.drawImage(layer,-w/2-anchorX,-h*.04-anchorY,w,h);ctx.restore();
-}
+// The original worker artwork is a single painted sprite. Keep it intact to prevent
+// cut-out limbs from separating; animate the full silhouette with a restrained gait.
 function drawCharacter(){
  const x=player.x*worldW/1280,y=player.y*worldH/720;
  const moving=player.phase==="walk"||player.phase==="move",working=player.phase==="work";
- const stride=moving?Math.sin(player.walkCycle):0;
- const bob=moving?Math.abs(Math.sin(player.walkCycle*2))*2.2:working?Math.sin(ambientTime*11)*1:0;
+ const gait=moving?Math.sin(player.walkCycle):0;
+ const bob=moving?Math.abs(Math.sin(player.walkCycle*2))*1.7:working?Math.sin(ambientTime*10)*.45:Math.sin(ambientTime*1.4)*.25;
+ const lean=moving?gait*.018:working?Math.sin(ambientTime*8)*.008:0;
  const swing=working?Math.sin(ambientTime*(player.target==="ore"?8.5:5.5)):0;
  ctx.save();ctx.translate(x,y+bob);ctx.scale(player.facingLeft?-1:1,1);
- ctx.fillStyle="#090d0bb0";ctx.beginPath();ctx.ellipse(0,2,23,7,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#090d0bb0";ctx.beginPath();ctx.ellipse(0,2,20,6,0,0,Math.PI*2);ctx.fill();
  if(workerSprite.complete&&workerSprite.naturalWidth){
-  buildWorkerRig();
-  const height=116,width=height*workerSprite.width/workerSprite.height;
-  const cycle=moving?Math.sin(player.walkCycle):working?Math.sin(ambientTime*7):Math.sin(ambientTime*1.2)*.025;
-  const legSwing=moving?Math.sin(player.walkCycle)*.19:working?Math.sin(ambientTime*7)*.025:0;
-  const armSwing=moving?-Math.sin(player.walkCycle)*.13:working?Math.sin(ambientTime*8)*.12:0;
-  const bob=moving?Math.abs(Math.sin(player.walkCycle*2))*2.5:working?Math.sin(ambientTime*10)*1.2:0;
-  ctx.translate(0,bob);
-  if(workerRig){
-   ctx.save();ctx.translate(0,-height+7);ctx.rotate(moving?cycle*.012:working?swing*.008:Math.sin(ambientTime*1.4)*.004);
-   ctx.drawImage(workerRig.base,-width/2,-height*.04,width,height);
-   // Limbs and head are cut from the original painted sprite, preserving its exact textures and clothing.
-   drawRigPart(workerRig.legBack,width,height,-width*.10,-height*.34,legSwing*.78);
-   drawRigPart(workerRig.legFront,width,height,width*.06,-height*.34,-legSwing);
-   drawRigPart(workerRig.armBack,width,height,-width*.22,-height*.62,-armSwing);
-   drawRigPart(workerRig.armFront,width,height,width*.22,-height*.60,armSwing);
-   drawRigPart(workerRig.head,width,height,0,-height*.82,moving?Math.sin(player.walkCycle)*.025:Math.sin(ambientTime*1.3)*.012);
-   ctx.restore();
-  }else{
-   ctx.save();ctx.translate(stride*2.2,-height+7);ctx.rotate(moving?stride*.012:working?swing*.008:0);ctx.drawImage(workerSprite,-width/2,-height*.04,width,height);ctx.restore();
+  const height=108,width=height*workerSprite.width/workerSprite.height;
+  // Animate the intact original painted figure as one connected silhouette.
+  ctx.save();ctx.translate(gait*1.2,-height+7);ctx.rotate(lean);ctx.drawImage(workerSprite,-width/2,-height*.04,width,height);ctx.restore();
+  // Tool motion gives a readable work/walk cycle without detaching the worker's anatomy.
+  if(working||moving){
+   ctx.save();ctx.translate(width*.24,-height*.39);
+   ctx.rotate(working?(player.target==="ore"?-.9+swing*.75:-.3+swing*.18):-.18+gait*.12);
+   ctx.lineCap="round";strokePath([[0,0],[0,-27]],"#30271e",4.2);strokePath([[0,-26],[-10,-30],[11,-30]],"#77786b",3.4);ctx.restore();
   }
-  if(working){
-   ctx.save();ctx.translate(width*.28,-height*.39);ctx.rotate(player.target==="ore"?-.95+swing*.9:-.35+swing*.22);
-   ctx.lineCap="round";strokePath([[0,0],[0,-31]],"#33271d",5);strokePath([[0,-29],[-12,-34],[13,-34]],"#73776b",4);ctx.restore();
-   if(player.target==="ore"&&swing>.88){ctx.globalAlpha=.9;ctx.strokeStyle="#ffd27c";ctx.lineWidth=2;ctx.beginPath();ctx.arc(width*.28,-height*.39,17,-1.1,-.1);ctx.stroke();ctx.globalAlpha=1;}
-  }
+  if(working&&player.target==="ore"&&swing>.88){ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle="#ffd27c";ctx.lineWidth=2;ctx.beginPath();ctx.arc(width*.24,-height*.39,15,-1.1,-.1);ctx.stroke();ctx.restore();}
  }else{
   ctx.fillStyle="#d58b32";ctx.fillRect(-11,-67,22,35);ctx.beginPath();ctx.arc(0,-76,10,0,7);ctx.fillStyle="#d8a16d";ctx.fill();
  }
@@ -578,7 +531,7 @@ function tick(now){
   const p=worldPoint(TASKS[player.target].pos);if(Math.random()<.7)addParticles(p.x,p.y-10,1,player.target==="ore"?"#ffd083":player.target==="waste"?"#a9d8c4":"#e9ad53",.5);
   if(pct>=1)finishAction();
  }
- if(player.phase!=="idle"){const px=player.x*worldW/1280,py=player.y*worldH/720;$("activity").style.left=Math.max(100,Math.min(worldW-100,px))+"px";$("activity").style.top=Math.max(65,py-118)+"px";}draw();requestAnimationFrame(tick);
+ if(player.phase!=="idle"){const px=player.x*worldW/1280,py=player.y*worldH/720;$("activity").style.left=Math.max(100,Math.min(worldW-100,px))+"px";$("activity").style.top=Math.min(worldH-18,py+18)+"px";}draw();requestAnimationFrame(tick);
 }
 function renderResources(){
  $("topOre").textContent=state.resources["Minério de Ferro"]||0;$("topScrap").textContent=state.resources["Sucata"]||0;$("topParts").textContent=(state.resources["Componentes"]||0)+(state.resources["Peças"]||0)+(state.resources["Engrenagens"]||0);$("topWaste").textContent=state.resources["Resíduo"]||0;
