@@ -198,53 +198,31 @@ function drawGenerator(){
  if(!state.objective.generator){ctx.strokeStyle="#e5b34f99";ctx.lineWidth=1.5;ctx.setLineDash([3,4]);ctx.beginPath();ctx.ellipse(0,0,61,39,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
  ctx.restore();
 }
-function drawResourcePile(key,a,p,remaining){
- const scale=worldW/1280,depth=Math.max(.12,remaining),base=scale;
- ctx.save();ctx.translate(p.x,p.y+7*scale);ctx.scale(scale,scale);
- // Ground contact shadow and a subtle resource-specific beacon.
- ctx.fillStyle="#080b08a8";ctx.beginPath();ctx.ellipse(0,3,34*depth+7,11*depth+3,0,0,Math.PI*2);ctx.fill();
- const glow=ctx.createRadialGradient(0,-7,2,0,-7,49);
- const tint=key==="ore"?"255,188,91":key==="scrap"?"174,190,151":key==="waste"?"122,190,159":"217,174,99";
- glow.addColorStop(0,`rgba(${tint},${.17+.08*Math.sin(ambientTime*2.7)})`);glow.addColorStop(1,"rgba(0,0,0,0)");
- ctx.fillStyle=glow;ctx.beginPath();ctx.arc(0,-7,49,0,Math.PI*2);ctx.fill();
- if(remaining>0){
-  const n=key==="ore"?Math.ceil(remaining*7):key==="scrap"?Math.ceil(remaining*8):key==="waste"?Math.ceil(remaining*9):Math.ceil(remaining*4);
-  for(let i=0;i<n;i++){
-   const col=i%3,row=Math.floor(i/3),x=(col-1)*14+(row%2)*5+(Math.sin(i*7.1)*2),y=-row*6-5-Math.cos(i*4.2)*2;
-   if(key==="ore"){
-    ctx.fillStyle=["#55564c","#77766a","#a18a62"][i%3];ctx.strokeStyle="#302d25";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x-8,y+3);ctx.lineTo(x-4,y-7);ctx.lineTo(x+3,y-10);ctx.lineTo(x+9,y-2);ctx.lineTo(x+5,y+5);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.strokeStyle="#e5bd73";ctx.globalAlpha=.65;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x-3,y-6);ctx.lineTo(x+2,y-8);ctx.stroke();ctx.globalAlpha=1;
-   }else if(key==="scrap"){
-    ctx.save();ctx.translate(x,y);ctx.rotate((i%2?-.24:.19));ctx.fillStyle=["#586157","#8b7955","#4b5551"][i%3];ctx.strokeStyle="#252b25";ctx.lineWidth=1.5;ctx.fillRect(-8,-4,17,8);ctx.strokeRect(-8,-4,17,8);ctx.strokeStyle="#c29a5d";ctx.beginPath();ctx.moveTo(-5,-1);ctx.lineTo(5,-1);ctx.stroke();ctx.restore();
-   }else if(key==="waste"){
-    ctx.fillStyle=["#69745a","#8c8968","#596d5b"][i%3];ctx.strokeStyle="#303a2e";ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,y,7,4,Math.sin(i)*.3,0,Math.PI*2);ctx.fill();ctx.stroke();
-   }else{
-    ctx.fillStyle="#8a6b42";ctx.fillRect(x-7,y-6,14,12);ctx.strokeStyle="#d0a05b";ctx.strokeRect(x-7,y-6,14,12);
-   }
-  }
-  // Small pulsing collectible glints on the pile edges, not a floating UI marker.
-  for(let i=0;i<2;i++){const phase=ambientTime*2.1+i*3.1+ a.pos[0];const sx=Math.cos(phase)*22,sy=-18+Math.sin(phase*1.4)*9;ctx.globalAlpha=.35+.45*(.5+.5*Math.sin(phase*2));ctx.fillStyle="#ffe1a0";ctx.shadowColor="#ffc45c";ctx.shadowBlur=8;ctx.beginPath();ctx.arc(sx,sy,1.5,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;}
- }else{
-  ctx.globalAlpha=.65;ctx.fillStyle="#c8b17e";ctx.font="bold 9px Arial";ctx.textAlign="center";ctx.fillText("ESGOTADO",0,-4);ctx.globalAlpha=1;
- }
- ctx.restore();
-}
 function drawTargetMarkers(){
  Object.entries(TASKS).forEach(([key,a])=>{
   if(key==="generator"&&state.objective.generator)return;
   const p=worldPoint(a.pos),hot=player.target===key;
-  if(key!=="generator"){
-   const remaining=Math.max(0,1-(state.depletion?.[key]||0)/8);
-   drawResourcePile(key,a,p,remaining);
-   if(remaining<=0)return;
-  }
+  const depleted=key==="generator"?0:Math.min(1,(state.depletion?.[key]||0)/8);
   const pulse=.5+.5*Math.sin(ambientTime*2.2+a.pos[0]*.01);
-  ctx.save();ctx.globalAlpha=hot?.95:.48+.22*pulse;
-  ctx.fillStyle=hot?"#ffe0a0":"#f2d18a";ctx.font="bold "+(hot?13:10)+"px Arial";ctx.textAlign="center";ctx.shadowColor="#eab75a";ctx.shadowBlur=hot?13:6;
-  const label=key==="generator"?"⚡ GERADOR A-03":hot?"COLETANDO":"DISPONÍVEL";
-  ctx.fillText(label,p.x,p.y+42);ctx.shadowBlur=0;
-  if(key==="generator"&&!state.objective.generator){ctx.fillStyle="#ffca58";ctx.font="bold 9px Arial";ctx.fillText("RECUPERAR",p.x,p.y+55);}
-  ctx.restore();
+  // Preserve the hand-painted resource artwork already present in the map.
+  // Only add a soft locator glow; never redraw ore/scrap/waste as geometric shapes.
+  if(key!=="generator"&&depleted<1){
+   ctx.save();
+   const alpha=(.12+.12*pulse)*(1-depleted*.8)*(hot?2.1:1);
+   const radius=(hot?44:30)+pulse*5;
+   const glow=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,radius);
+   glow.addColorStop(0,`rgba(255,196,103,${alpha})`);
+   glow.addColorStop(.55,`rgba(222,171,91,${alpha*.45})`);
+   glow.addColorStop(1,"rgba(0,0,0,0)");
+   ctx.fillStyle=glow;ctx.beginPath();ctx.arc(p.x,p.y,radius,0,Math.PI*2);ctx.fill();
+   ctx.restore();
+  }
+  if(hot||key==="generator"){
+   ctx.save();ctx.globalAlpha=.9;ctx.fillStyle="#ffe0a0";ctx.font="bold 11px Arial";ctx.textAlign="center";ctx.shadowColor="#eab75a";ctx.shadowBlur=8;
+   ctx.fillText(key==="generator"?"⚡ GERADOR A-03":"COLETANDO",p.x,p.y+43);
+   if(key==="generator"&&!state.objective.generator){ctx.fillStyle="#ffca58";ctx.font="bold 9px Arial";ctx.fillText("RECUPERAR",p.x,p.y+56);}
+   ctx.restore();
+  }
  });
 }
 function lineLimb(x1,y1,x2,y2,width,color){strokePath([[x1,y1],[x2,y2]],"#201f1a",width+3);strokePath([[x1,y1],[x2,y2]],color,width);}
@@ -313,7 +291,7 @@ function finishAction(){
  if(key==="ore"&&effect("mine_vein")&&Math.random()<.2)amount+=2;
  if(key==="waste"&&effect("clean_recycle")&&Math.random()<.2)state.resources["Sucata"]+=1;
  if(key==="scrap"&&effect("eng_parts")&&Math.random()<.2)state.resources["Componentes"]+=1;
- state.resources[a.item]+=amount;if(!state.depletion)state.depletion={ore:0,scrap:0,waste:0,crate:0};state.depletion[key]=((state.depletion[key]||0)+1)%8;gainSkill(a.skill,a.xp);gainPlayer(8+amount*2);state.actions++;
+ state.resources[a.item]+=amount;if(!state.depletion)state.depletion={ore:0,scrap:0,waste:0,crate:0};state.depletion[key]=Math.min(8,(state.depletion[key]||0)+1);gainSkill(a.skill,a.xp);gainPlayer(8+amount*2);state.actions++;
  if(key==="waste")state.objective.waste+=amount;if(key==="scrap")state.objective.scrap+=amount;if(key==="ore")state.objective.ore+=amount;
  const p=worldPoint(a.pos);addParticles(p.x/ worldW*1280,p.y/worldH*720,key==="ore"?14:9,key==="ore"?"#ffc16a":key==="waste"?"#9fd5c3":"#e8b65f",1.2);
  player.phase="idle";player.target=null;setActivity(false);setStatus("+"+amount+" "+a.item+" • +"+a.xp+" XP em "+a.skill+".");notify("+"+amount+" "+a.item+"  |  +"+a.xp+" XP");renderAll();saveQuiet();
