@@ -297,7 +297,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 const BG_SRC="assets/industrial_map.png";
 const $=id=>document.getElementById(id);
 const canvas=$("world"),ctx=canvas.getContext("2d");
-const bgImg=new Image();bgImg.src=BG_SRC;const workerSprite=new Image();workerSprite.src="assets/worker_painted.png";$("miniImage").src=BG_SRC;
+const bgImg=new Image();bgImg.src=BG_SRC;const workerSprite=new Image();workerSprite.src="assets/worker_painted.png";const workerIdleSheet=new Image();workerIdleSheet.src="assets/worker_idle_sheet.png";const workerWalkSheet=new Image();workerWalkSheet.src="assets/worker_walk_sheet.png";const workerMineSheet=new Image();workerMineSheet.src="assets/worker_mine_sheet.png";$("miniImage").src=BG_SRC;
 const SKILLS=["Mineração","Limpeza","Engenharia","Mecânica","Logística"];
 const TASKS={
  ore:{name:"Depósito de minério de ferro",short:"Minério de ferro",skill:"Mineração",xp:14,time:3.0,min:3,max:5,item:"Minério de Ferro",pos:[735,320],icon:"⛏"},
@@ -439,24 +439,31 @@ function pathIsWalkable(x1,y1,x2,y2){
  for(let i=1;i<=n;i++){const t=i/n;if(!pointInWalkZone(x1+(x2-x1)*t,y1+(y2-y1)*t))return false;}
  return true;
 }
-let workerRig=null;
-// The original worker artwork is a single painted sprite. Keep it intact to prevent
-// cut-out limbs from separating; animate the full silhouette with a restrained gait.
+// Whole-body illustrated frames keep all limbs and equipment attached during animation.
+function drawWorkerSheetFrame(sheet,frameCount,frameIndex,height,widthScale=1){
+ const frameWidth=sheet.naturalWidth/frameCount,width=height*frameWidth/sheet.naturalHeight*widthScale;
+ const sourceX=frameIndex*frameWidth;
+ ctx.drawImage(sheet,sourceX,0,frameWidth,sheet.naturalHeight,-width/2,-height*.04,width,height);
+}
 function drawCharacter(){
  const x=player.x*worldW/1280,y=player.y*worldH/720;
- const moving=player.phase==="walk"||player.phase==="move",working=player.phase==="work";
- const gait=moving?Math.sin(player.walkCycle):0;
- const bob=moving?Math.abs(Math.sin(player.walkCycle*2))*1.7:working?Math.sin(ambientTime*10)*.45:Math.sin(ambientTime*1.4)*.25;
- const lean=moving?gait*.018:working?Math.sin(ambientTime*8)*.008:0;
- const swing=working?Math.sin(ambientTime*(player.target==="ore"?8.5:5.5)):0;
+ const moving=player.phase==="walk"||player.phase==="move",mining=player.phase==="work"&&player.target==="ore";
+ const bob=moving?Math.abs(Math.sin(player.walkCycle*2))*1.2:mining?Math.sin(ambientTime*10)*.35:Math.sin(ambientTime*1.4)*.22;
  ctx.save();ctx.translate(x,y+bob);ctx.scale(player.facingLeft?-1:1,1);
  ctx.fillStyle="#090d0bb0";ctx.beginPath();ctx.ellipse(0,2,20,6,0,0,Math.PI*2);ctx.fill();
- if(workerSprite.complete&&workerSprite.naturalWidth){
-  const height=108,width=height*workerSprite.width/workerSprite.height;
-  // Animate the intact original painted figure as one connected silhouette.
-  ctx.save();ctx.translate(gait*1.2,-height+7);ctx.rotate(lean);ctx.drawImage(workerSprite,-width/2,-height*.04,width,height);ctx.restore();
-  // The original sprite already includes its pickaxe; do not draw a second tool over it.
-  if(working&&player.target==="ore"&&swing>.88){ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle="#ffd27c";ctx.lineWidth=2;ctx.beginPath();ctx.arc(width*.24,-height*.39,15,-1.1,-.1);ctx.stroke();ctx.restore();}
+ const height=108;
+ if(moving&&workerWalkSheet.complete&&workerWalkSheet.naturalWidth){
+  const frame=Math.floor(player.walkCycle*6/(Math.PI*2))%6;
+  drawWorkerSheetFrame(workerWalkSheet,6,frame,height,1.12);
+ }else if(mining&&workerMineSheet.complete&&workerMineSheet.naturalWidth){
+  const frame=Math.floor(ambientTime*3.4)%4;
+  drawWorkerSheetFrame(workerMineSheet,4,frame,height);
+ }else if(workerIdleSheet.complete&&workerIdleSheet.naturalWidth){
+  const frame=Math.floor(ambientTime*2.2)%3;
+  drawWorkerSheetFrame(workerIdleSheet,3,frame,height);
+ }else if(workerSprite.complete&&workerSprite.naturalWidth){
+  const width=height*workerSprite.width/workerSprite.height;
+  ctx.drawImage(workerSprite,-width/2,-height*.04,width,height);
  }else{
   ctx.fillStyle="#d58b32";ctx.fillRect(-11,-67,22,35);ctx.beginPath();ctx.arc(0,-76,10,0,7);ctx.fillStyle="#d8a16d";ctx.fill();
  }
