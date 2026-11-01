@@ -449,7 +449,9 @@ function unlocked(id){return state.unlockedNodes.includes(id);}
 function hasNode(id){return unlocked(id);}
 function effect(id){return hasNode(id);}
 function startAction(key){
- if(player.phase!=="idle"){notify("Termine a atividade atual primeiro.");return;}
+ if(player.phase==="work"){notify("Termine a atividade atual primeiro.");return;}
+ // A resource click can interrupt a free walk and redirect the worker.
+ player.moveTarget=null;
  const a=TASKS[key];
  if(key==="generator"){
   if(state.objective.generator){notify("O gerador A-03 já foi recuperado.");return;}
@@ -485,6 +487,13 @@ function tick(now){
   const speed=185*(effect("logistics_step")?1.2:1);
   if(dist<6){player.x=tx;player.y=ty;player.phase="work";player.work=0;const a=TASKS[player.target];sound(player.target==="ore"?"mine":player.target==="waste"?"clean":player.target==="generator"?"repair":"scrap");setActivity(true,"Trabalhando: "+a.short,"Preparando equipamento...");}
   else{player.x+=dx/dist*speed*dt;player.y+=dy/dist*speed*dt;}
+ }else if(player.phase==="move"&&player.moveTarget){
+  const dx=player.moveTarget.x-player.x,dy=player.moveTarget.y-player.y,dist=Math.hypot(dx,dy);
+  player.facingLeft=dx<0;player.walkCycle+=dt*13*(effect("logistics_step")?1.2:1);
+  if(now-lastFootstep>420){sound("walk");lastFootstep=now;}
+  const speed=185*(effect("logistics_step")?1.2:1);
+  if(dist<5){player.x=player.moveTarget.x;player.y=player.moveTarget.y;player.moveTarget=null;player.phase="idle";setActivity(false);setStatus("Trabalhador chegou ao destino.");}
+  else{const step=Math.min(dist,speed*dt);player.x+=dx/dist*step;player.y+=dy/dist*step;}
  }else if(player.phase==="work"){
   const a=TASKS[player.target];let duration=a.time;
   if(player.target==="ore"&&effect("mine_speed"))duration*=.85;
@@ -596,10 +605,15 @@ function sound(type){
 }
 $("soundBtn").addEventListener("click",()=>{soundEnabled=!soundEnabled;$("soundBtn").textContent=soundEnabled?"🔊":"🔇";if(soundEnabled)sound("click");});
 canvas.addEventListener("click",e=>{
- const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*1280,y=(e.clientY-r.top)/r.height*720;
+ const r=canvas.getBoundingClientRect();
+ const x=Math.max(18,Math.min(1262,(e.clientX-r.left)/r.width*1280));
+ const y=Math.max(35,Math.min(690,(e.clientY-r.top)/r.height*720));
  let nearest="",dist=Infinity;
  Object.entries(TASKS).forEach(([key,a])=>{const d=Math.hypot(a.pos[0]-x,a.pos[1]-y);if(d<dist){dist=d;nearest=key;}});
- if(dist<65){startAction(nearest);}else setStatus("Clique em um recurso destacado ou no gerador ⚡ para interagir.");
+ if(dist<65){startAction(nearest);return;}
+ if(player.phase==="work"){notify("O trabalhador está ocupado.");return;}
+ player.target=null;player.moveTarget={x,y};player.phase="move";player.work=0;
+ setActivity(false);sound("click");setStatus("Caminhando até o local indicado.");
 });
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>openModal(b.dataset.tab)));
 $("settingsBtn").addEventListener("click",()=>openModal("Configurações"));
@@ -613,7 +627,7 @@ document.addEventListener("pointerout",e=>{if(e.target.closest(".node[title]"))t
 document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openModal(b.dataset.open)));
 $("closeModal").addEventListener("click",closeModal);
 $("saveBtn").addEventListener("click",save);
-$("resetBtn").addEventListener("click",()=>{if(confirm("Começar uma nova jornada? O progresso salvo neste navegador será apagado.")){state=defaults();player={x:580,y:520,target:null,phase:"idle",work:0,walkCycle:0,facingLeft:false};renderAll();closeModal();save();notify("Nova jornada iniciada.");}});
+$("resetBtn").addEventListener("click",()=>{if(confirm("Começar uma nova jornada? O progresso salvo neste navegador será apagado.")){state=defaults();player={x:580,y:520,target:null,moveTarget:null,phase:"idle",work:0,walkCycle:0,facingLeft:false};renderAll();closeModal();save();notify("Nova jornada iniciada.");}});
 window.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 load();renderAll();resize();$("soundBtn").textContent="🔊";setInterval(saveQuiet,30000);requestAnimationFrame(tick);
 })();
