@@ -231,6 +231,15 @@ button{font:inherit;color:inherit;cursor:pointer}
 .bottom-nav button:hover .nav-icon,.bottom-nav button.active .nav-icon{filter:drop-shadow(0 0 5px #f4c76c99) drop-shadow(0 2px 2px #000)}
 @media(max-width:600px){.bottom-nav button .nav-icon{width:27px;height:27px}}
 
+
+/* Compact activity HUD replaces the unused mobile directional pad. */
+.virtual-pad{display:none!important}
+.activity{left:14px;right:auto;top:auto;bottom:14px;transform:none;width:205px;max-width:calc(100% - 28px);padding:6px 9px;text-align:left;border:1px solid #a98750;border-radius:8px;background:rgba(17,21,17,.94);box-shadow:0 4px 14px #0009}
+.activity .activity-title{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.activity .activity-sub{font-size:9px;margin:2px 0 4px}
+.activity .progress{height:4px}
+.status{bottom:14px;left:230px;max-width:200px}
+@media(max-width:600px){.activity{left:7px;bottom:70px;width:170px}.status{left:7px;bottom:7px;max-width:150px}}
 </style>
 </head>
 <body>
@@ -291,8 +300,9 @@ const canvas=$("world"),ctx=canvas.getContext("2d");
 const bgImg=new Image();bgImg.src=BG_SRC;const workerSprite=new Image();workerSprite.src="assets/worker_painted.png";$("miniImage").src=BG_SRC;
 const SKILLS=["Mineração","Limpeza","Engenharia","Mecânica","Logística"];
 const TASKS={
- ore:{name:"Depósito de minério de ferro",short:"Minério de ferro",skill:"Mineração",xp:14,time:3.0,min:3,max:5,item:"Minério de Ferro",pos:[790,390],icon:"⛏"},
- scrap:{name:"Pilha de sucata",short:"Sucata",skill:"Engenharia",xp:10,time:2.5,min:2,max:4,item:"Sucata",pos:[1110,600],icon:"⚙"},
+ ore:{name:"Depósito de minério de ferro",short:"Minério de ferro",skill:"Mineração",xp:14,time:3.0,min:3,max:5,item:"Minério de Ferro",pos:[735,320],icon:"⛏"},
+ ore2:{name:"Segundo depósito de minério de ferro",short:"Minério de ferro",skill:"Mineração",xp:14,time:3.0,min:3,max:5,item:"Minério de Ferro",pos:[930,400],icon:"⛏"},
+ scrap:{name:"Sucata na carroceria do caminhão",short:"Sucata",skill:"Engenharia",xp:10,time:2.5,min:2,max:4,item:"Sucata",pos:[270,495],icon:"⚙"},
  waste:{name:"Resíduos industriais",short:"Resíduo industrial",skill:"Limpeza",xp:12,time:2.8,min:2,max:5,item:"Resíduo",pos:[285,555],icon:"☣"},
  crate:{name:"Caixa de componentes",short:"Componentes",skill:"Mecânica",xp:16,time:3.3,min:1,max:2,item:"Componentes",pos:[430,480],icon:"▣"},
  generator:{name:"Gerador principal",short:"Gerador A-03",skill:"Mecânica",xp:60,time:5.5,item:"",min:0,max:0,pos:[1080,285],icon:"⚡",generator:true}
@@ -380,27 +390,26 @@ function drawGenerator(){
  ctx.restore();
 }
 function drawTargetMarkers(){
+ // Hand-traced paths follow the painted silhouettes in industrial_map.png (world 1280x720).
  const outlines={
-  ore:[[-54,4],[-43,-17],[-28,-29],[-14,-43],[4,-39],[18,-31],[33,-24],[47,-5],[54,9],[43,23],[27,28],[8,34],[-12,31],[-30,25],[-46,17]],
-  scrap:[[-48,10],[-38,-8],[-22,-22],[-5,-28],[13,-22],[28,-16],[46,-3],[51,12],[36,26],[15,30],[-8,27],[-30,23]],
+  ore:[[-73,4],[-68,-18],[-53,-28],[-45,-43],[-27,-55],[-12,-49],[2,-59],[18,-47],[35,-39],[43,-23],[61,-15],[72,1],[62,17],[47,28],[30,34],[16,46],[-2,43],[-18,50],[-36,40],[-52,34],[-65,19]],
+  ore2:[[-72,8],[-64,-13],[-48,-27],[-35,-42],[-18,-48],[-5,-39],[10,-53],[28,-42],[40,-31],[55,-23],[69,-5],[75,12],[61,27],[46,34],[29,44],[9,42],[-8,51],[-27,39],[-46,35],[-61,23]],
+  scrap:[[-105,25],[-96,5],[-81,-10],[-69,-27],[-52,-20],[-39,-40],[-24,-28],[-9,-43],[8,-30],[22,-40],[39,-21],[53,-29],[69,-10],[84,-13],[101,3],[96,24],[78,35],[59,28],[43,44],[24,35],[6,49],[-12,35],[-31,45],[-49,29],[-69,38],[-87,26]],
   waste:[[-36,7],[-27,-11],[-12,-19],[2,-15],[14,-24],[30,-13],[39,3],[30,19],[12,22],[-7,17],[-24,20]],
   crate:[[-25,-20],[23,-20],[27,17],[12,24],[-25,17]]
  };
  Object.entries(TASKS).forEach(([key,a])=>{
-  if(key==="generator"&&state.objective.generator)return;
   if(key==="generator")return;
-  const depleted=Math.min(1,(state.depletion?.[key]||0)/8);
+  const depletionKey=key==="ore2"?"ore":key;
+  const depleted=Math.min(1,(state.depletion?.[depletionKey]||0)/8);
   if(depleted>=1)return;
-  const p=worldPoint(a.pos),pulse=.5+.5*Math.sin(ambientTime*2.5+a.pos[0]*.01),hot=player.target===key;
+  const p=worldPoint(a.pos),pulse=.5+.5*Math.sin(ambientTime*2.5+a.pos[0]*.01),hot=player.target===depletionKey;
   const shape=outlines[key]||outlines.crate;
-  ctx.save();ctx.translate(p.x,p.y+(key==="ore"?-20:0));
-  // Trace the silhouette of the resource itself, not a locator circle on the floor.
-  const trace=()=>{
-   ctx.beginPath();shape.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();
-  };
-  ctx.globalAlpha=.48+.28*pulse+(hot?.22:0);ctx.shadowColor=key==="ore"?"#ff8b28":"#ffc36a";ctx.shadowBlur=hot?16:10;
-  ctx.strokeStyle=key==="ore"?"#ffbd58":"#f2c77a";ctx.lineWidth=3.2;trace();ctx.stroke();
-  ctx.shadowBlur=3;ctx.globalAlpha=.9;ctx.strokeStyle="#fff0bd";ctx.lineWidth=1;trace();ctx.stroke();
+  ctx.save();ctx.translate(p.x,p.y);
+  const trace=()=>{ctx.beginPath();shape.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();};
+  ctx.globalAlpha=.65+.2*pulse+(hot?.15:0);ctx.shadowColor=key==="ore"||key==="ore2"?"#ff8b28":"#ffc36a";ctx.shadowBlur=hot?17:12;
+  ctx.strokeStyle=key==="ore"||key==="ore2"?"#ffbd58":"#f2c77a";ctx.lineWidth=3.5;trace();ctx.stroke();
+  ctx.shadowBlur=4;ctx.globalAlpha=.95;ctx.strokeStyle="#fff0bd";ctx.lineWidth=1.25;trace();ctx.stroke();
   ctx.restore();
  });
 }
@@ -446,12 +455,7 @@ function drawCharacter(){
   const height=108,width=height*workerSprite.width/workerSprite.height;
   // Animate the intact original painted figure as one connected silhouette.
   ctx.save();ctx.translate(gait*1.2,-height+7);ctx.rotate(lean);ctx.drawImage(workerSprite,-width/2,-height*.04,width,height);ctx.restore();
-  // Tool motion gives a readable work/walk cycle without detaching the worker's anatomy.
-  if(working||moving){
-   ctx.save();ctx.translate(width*.24,-height*.39);
-   ctx.rotate(working?(player.target==="ore"?-.9+swing*.75:-.3+swing*.18):-.18+gait*.12);
-   ctx.lineCap="round";strokePath([[0,0],[0,-27]],"#30271e",4.2);strokePath([[0,-26],[-10,-30],[11,-30]],"#77786b",3.4);ctx.restore();
-  }
+  // The original sprite already includes its pickaxe; do not draw a second tool over it.
   if(working&&player.target==="ore"&&swing>.88){ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle="#ffd27c";ctx.lineWidth=2;ctx.beginPath();ctx.arc(width*.24,-height*.39,15,-1.1,-.1);ctx.stroke();ctx.restore();}
  }else{
   ctx.fillStyle="#d58b32";ctx.fillRect(-11,-67,22,35);ctx.beginPath();ctx.arc(0,-76,10,0,7);ctx.fillStyle="#d8a16d";ctx.fill();
@@ -477,14 +481,15 @@ function startAction(key){
  if(player.phase==="work"){notify("Termine a atividade atual primeiro.");return;}
  // A resource click can interrupt a free walk and redirect the worker.
  player.moveTarget=null;
- const a=TASKS[key];
- if(key==="generator"){
+ const taskKey=key==="ore2"?"ore":key;
+ const a=TASKS[taskKey];
+ if(taskKey==="generator"){
   if(state.objective.generator){notify("O gerador A-03 já foi recuperado.");return;}
   if(state.objective.waste<20||state.objective.scrap<15||state.objective.ore<10){notify("Antes de recuperar o gerador, conclua os 3 objetivos de coleta.");setStatus("Requisitos: 20 resíduos, 15 sucatas e 10 minérios.");return;}
  }
- const dest=nearestWalkable(a.pos[0],a.pos[1]);
+ const dest=nearestWalkable(TASKS[key].pos[0],TASKS[key].pos[1]);
  if(!pathIsWalkable(player.x,player.y,dest.x,dest.y)){notify("Não há caminho livre até esse ponto.");return;}
- player.target=key;player.phase="walk";player.work=0;sound("click");const p=worldPoint([dest.x,dest.y]);player.facingLeft=p.x<player.x*worldW/1280;TASKS[key]._walkPos=[dest.x,dest.y];setActivity(true,"Caminhando até "+a.short+"...","O trabalhador está se deslocando até o alvo.");$("activityBar").style.width="0%";setStatus("Caminhando até "+a.name+".");
+ player.target=taskKey;player.phase="walk";player.work=0;sound("click");const p=worldPoint([dest.x,dest.y]);player.facingLeft=p.x<player.x*worldW/1280;TASKS[key]._walkPos=[dest.x,dest.y];setActivity(true,"Caminhando até "+a.short+"...","O trabalhador está se deslocando até o alvo.");$("activityBar").style.width="0%";setStatus("Caminhando até "+a.name+".");
 }
 function setActivity(show,title,sub){$("activity").classList.toggle("show",show);$("activityTitle").textContent=title;$("activitySub").textContent=sub;}
 function finishAction(){
