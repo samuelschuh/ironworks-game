@@ -462,7 +462,9 @@ function buildWorkerRig(){
  workerRig={base,head:makeLayer(parts.head),armBack:makeLayer(parts.armBack),armFront:makeLayer(parts.armFront),legBack:makeLayer(parts.legBack),legFront:makeLayer(parts.legFront)};
 }
 function drawRigPart(layer,w,h,anchorX,anchorY,angle,scale=1){
- ctx.save();ctx.translate(anchorX,anchorY);ctx.rotate(angle);ctx.scale(scale,scale);ctx.drawImage(layer,-w/2,-h*.04,w,h);ctx.restore();
+ ctx.save();ctx.translate(anchorX,anchorY);ctx.rotate(angle);ctx.scale(scale,scale);
+ // Keep the layer aligned to the original sprite, rotating only around its joint.
+ ctx.drawImage(layer,-w/2-anchorX,-h*.04-anchorY,w,h);ctx.restore();
 }
 function drawCharacter(){
  const x=player.x*worldW/1280,y=player.y*worldH/720;
