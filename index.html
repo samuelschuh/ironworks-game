@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IRONWORKS — Recuperação Industrial</title>
+<style>
+:root{--bg:#121613;--panel:rgba(17,21,17,.95);--panel2:#30291f;--line:#986c31;--gold:#f0b34c;--gold2:#ffd16c;--text:#f3eee2;--muted:#b9b19e;--green:#9bc95d;--red:#d96f54}
+*{box-sizing:border-box}
+body{margin:0;background:#101411;color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+#app{height:100vh;min-height:620px;display:flex;flex-direction:column;background:#101411}
+.topbar{height:64px;flex:0 0 64px;display:flex;align-items:center;gap:9px;padding:7px 13px;background:linear-gradient(180deg,#2b2821,#111512);border-bottom:2px solid #986b32;box-shadow:0 5px 18px #0009;z-index:20}
+.brand{display:flex;align-items:center;gap:9px;min-width:220px}.brand-mark{width:43px;height:43px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--gold);color:var(--gold);font-size:25px;background:radial-gradient(circle,#47371f,#171a16)}
+.brand-name{font-weight:900;font-size:23px;letter-spacing:1.4px;line-height:1}.brand-sub{color:#c6a56b;font-size:9px;letter-spacing:2px;margin-top:4px}
+.nav{display:flex;gap:6px;flex:1;min-width:0}.nav button,.top-action{border:1px solid #70552f;background:linear-gradient(#373126,#211f1a);padding:10px 12px;border-radius:8px;font-weight:700;font-size:12px;white-space:nowrap;transition:.15s}
+.nav button:hover,.top-action:hover{border-color:var(--gold);background:#514028}.nav button.active{background:linear-gradient(#76501e,#3b2a17);border-color:var(--gold);color:#ffe0a0;box-shadow:inset 0 0 0 1px #f5c46a44}
+.top-actions{display:flex;gap:7px}.top-action{min-width:42px;padding:9px 12px}
+.main{position:relative;flex:1;min-height:0;overflow:hidden;background:#3d483c}#world{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;background-image:url("assets/industrial_map.png");background-size:cover;background-position:center;background-repeat:no-repeat}
+.vignette{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#090d0b55,transparent 27%,transparent 75%,#090d0b55),linear-gradient(0deg,#090d0b66,transparent 25%,transparent 76%,#090d0b44)}
+.hud{position:absolute;z-index:5;pointer-events:none}.panel{pointer-events:auto;background:var(--panel);border:1px solid #a17a42;border-radius:10px;box-shadow:0 10px 28px #0009,inset 0 0 0 1px #eabf5b18;backdrop-filter:blur(5px)}
+.left-stack{left:12px;top:12px;width:225px;display:flex;flex-direction:column;gap:9px;transition:transform .22s ease}.right-stack{right:12px;top:12px;width:230px;display:flex;flex-direction:column;gap:9px;transition:transform .22s ease}
+.left-stack.collapsed{transform:translateX(calc(-100% - 18px))}.right-stack.collapsed{transform:translateX(calc(100% + 18px))}
+.side-toggle{position:absolute;z-index:9;top:50%;transform:translateY(-50%);width:25px;height:54px;border:1px solid #a17a42;background:#171b16eF;color:#f4c05b;border-radius:7px;font-size:17px;box-shadow:0 4px 12px #0008}.side-toggle.left{left:0}.side-toggle.right{right:0}
+#iw #unused{display:none}
+.player-card{padding:10px;display:flex;gap:10px;align-items:center}.avatar{width:56px;height:56px;border-radius:8px;flex:0 0 56px;background:#292a20 url("assets/worker_painted.png") center 17%/cover no-repeat;border:1px solid #b58a46;display:grid;place-items:center;font-size:0}
+.player-name{font-size:10px;color:var(--gold);font-weight:800;letter-spacing:.7px}.level-line{font-size:17px;font-weight:800;margin:4px 0 6px}.muted{color:var(--muted);font-size:10px}
+.progress{height:9px;border-radius:20px;background:#080b09;border:1px solid #625a43;overflow:hidden}.progress>span{height:100%;display:block;width:0;background:linear-gradient(90deg,#6f9f3d,#c2e36a);box-shadow:0 0 12px #a4d85977;transition:width .2s}
+.objectives{padding:11px}.panel-title{color:var(--gold);font-weight:900;font-size:13px;letter-spacing:.4px;margin-bottom:8px}
+.objective{display:flex;gap:7px;align-items:center;font-size:10px;margin:8px 0;color:#e8e2d4}.objective .check{width:15px;height:15px;border:1px solid #8f907d;border-radius:4px;display:grid;place-items:center;font-size:10px;color:#10130e;flex:0 0 15px}.objective.done .check{background:var(--green);border-color:var(--green)}.objective strong{color:var(--gold);margin-left:auto}
+.reward-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.reward{border:1px solid #55452d;background:#171914;border-radius:6px;padding:6px 7px;font-size:9px;color:#e8d5a6}
+.map-panel,.skills-summary{padding:10px}.mini-map{height:84px;border-radius:6px;overflow:hidden;border:1px solid #76603a;position:relative;background:#344333}.mini-map img{width:100%;height:100%;object-fit:cover;filter:saturate(.8) brightness(.75)}.mini-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#ffe06c;box-shadow:0 0 11px #ffcf3e;left:48%;top:53%;border:2px solid #322817}
+.skill-mini{display:grid;grid-template-columns:1fr auto;gap:2px 8px;margin:7px 0;font-size:10px}.skill-mini .skill-level{color:var(--gold)}.skill-mini .progress{grid-column:1/3;height:5px}
+.full-btn{width:100%;border:1px solid #9a753c;background:linear-gradient(#58401f,#302619);border-radius:6px;padding:8px;font-size:9px;font-weight:800;margin-top:6px}.full-btn:hover{filter:brightness(1.25)}
+.bottom-inventory{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:5;width:min(720px,calc(100% - 530px));min-width:400px;padding:7px 9px;display:flex;gap:7px;align-items:center}
+.weight{min-width:68px;border-right:1px solid #675333;padding-right:8px;color:var(--gold);font-size:10px;font-weight:800}.resource{min-width:70px;text-align:center;border-right:1px solid #514633;padding:1px 4px}.resource .emoji{font-size:18px;display:block}.resource .amount{font-weight:900;color:#ffe0a0;font-size:14px}.resource .name{font-size:9px;color:var(--muted);white-space:nowrap}
+.activity{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);z-index:7;width:min(190px,42%);padding:6px 9px;text-align:center;display:none;pointer-events:none;background:rgba(17,21,17,.91);border-color:#b18a4e}
+.activity .activity-title{font-size:10px}.activity .activity-sub{font-size:9px;margin:2px 0 4px}.activity .progress{height:5px}.activity.show{display:block}.activity-title{font-size:12px;font-weight:800}.activity-sub{color:var(--muted);font-size:10px;margin:4px 0 7px}
+.status{position:absolute;bottom:10px;left:12px;z-index:8;padding:8px 10px;font-size:10px;max-width:235px}.toast{position:absolute;right:285px;bottom:100px;z-index:10;padding:9px 12px;border:1px solid #b98a39;background:#171810ee;border-radius:8px;box-shadow:0 8px 24px #0009;font-size:11px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}
+.modal{position:absolute;z-index:15;left:50%;top:50%;transform:translate(-50%,-50%);width:min(700px,calc(100% - 34px));max-height:calc(100% - 40px);overflow:auto;padding:16px;display:none}.modal.show{display:block}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.modal-head h2{margin:0;color:var(--gold);font-size:20px}.close{background:#34291b;border:1px solid #84612f;border-radius:6px;padding:6px 10px;font-size:11px}
+.modal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.card{padding:11px;border:1px solid #5f5034;background:#191d18;border-radius:8px}.card h3{margin:0 0 6px;font-size:13px;color:#f0d39a}.card p{margin:4px 0;color:var(--muted);font-size:10px;line-height:1.4}.card button{border:1px solid #9a753c;background:#4c371b;border-radius:6px;padding:7px 9px;font-size:10px;font-weight:800;margin-top:7px}.card button:disabled{opacity:.4;cursor:not-allowed}
+.tree-intro{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:linear-gradient(90deg,#35291a,#191e18);border:1px solid #8c632d;border-radius:8px;margin-bottom:12px}.points{font-weight:900;color:#ffcf60;font-size:17px}.tree-grid{display:grid;grid-template-columns:repeat(5,minmax(110px,1fr));gap:12px;overflow-x:auto;padding:4px 2px 12px}.branch{background:linear-gradient(180deg,#20271f,#141914);border:1px solid #695638;border-radius:9px;padding:9px;min-width:0;min-width:110px}.branch h3{font-size:11px;color:#e8bb65;margin:0 0 12px;text-align:center;white-space:nowrap}.node{position:relative;border:1px solid #63563d;border-radius:9px;padding:7px 5px;margin:14px auto 10px;background:linear-gradient(145deg,#343b30,#1a201a);width:76px;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:help;box-shadow:0 4px 8px #0006}.node:before{content:"";position:absolute;left:50%;top:-16px;height:15px;border-left:2px solid #98733e}.node:first-of-type:before{display:none}.node strong{display:block;font-size:22px;line-height:1.1;color:#f5d99d}.node p{display:none}.node .node-meta{font-size:8px;color:#e4b85e;margin-top:4px;text-align:center}.node button{width:100%;font-size:8px;padding:5px 2px;margin-top:4px;white-space:nowrap}.node.unlocked{border-color:#9ac36a;background:linear-gradient(145deg,#405438,#1c2a1c);box-shadow:0 0 12px #8fc45b33}.node.locked{opacity:.48;filter:grayscale(.65)}.node[title]:hover{border-color:#ffd36b;transform:scale(1.06);z-index:2}.branch h3{display:flex;align-items:center;justify-content:center;gap:4px}
+.skill-tooltip{position:fixed;z-index:1000;max-width:220px;padding:8px 10px;background:#10150f;border:1px solid #d0a14d;border-radius:7px;color:#f4ead5;font-size:11px;line-height:1.4;pointer-events:none;box-shadow:0 8px 20px #000b;display:none}
+.tree-legend{font-size:10px;color:var(--muted);margin:0 0 10px}
+@media(max-width:930px){.brand{min-width:160px}.brand-name{font-size:19px}.nav button{padding:9px 8px;font-size:10px}.left-stack{width:210px}.right-stack{width:225px}.bottom-inventory{width:calc(100% - 450px);min-width:360px}}
+@media(max-width:700px){body{overflow:auto}#app{height:auto;min-height:100vh}.topbar{height:auto;min-height:60px;flex-wrap:wrap}.brand{flex:1}.nav{order:3;flex-basis:100%;overflow-x:auto}.main{height:850px;flex:none}.left-stack{width:180px}.right-stack{width:180px;top:310px}.skills-summary{display:none}.bottom-inventory{width:calc(100% - 20px);min-width:0;overflow-x:auto}.status{bottom:85px}.activity{top:55%}.tree-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="app">
+<header class="topbar">
+ <div class="brand"><div class="brand-mark">⚙</div><div><div class="brand-name">IRONWORKS</div><div class="brand-sub">RECUPERAÇÃO INDUSTRIAL</div></div></div>
+ <nav class="nav"><button class="active" data-tab="Mapa">◈ Mapa</button><button data-tab="Missões">▣ Missões</button><button data-tab="Habilidades">♧ Habilidades</button><button data-tab="Fabricação">⚒ Fabricação</button><button data-tab="Equipamentos">⚙ Equipamentos</button><button data-tab="Base">⌂ Base</button></nav>
+ <div class="top-actions"><button class="top-action" id="soundBtn" title="Som ligado/desligado">🔊</button><button class="top-action" id="saveBtn" title="Salvar">▣</button><button class="top-action" id="resetBtn" title="Novo jogo">⟳</button></div>
+</header>
+<main class="main">
+ <canvas id="world"></canvas><div class="vignette"></div>
+ <section class="hud left-stack">
+  <div class="panel player-card"><div class="avatar"></div><div style="flex:1;min-width:0"><div class="player-name">TRABALHADOR INDUSTRIAL</div><div class="level-line">Nível <span id="playerLevel">1</span> <span class="muted">• <span id="playerXp">0</span> / <span id="playerNeed">350</span> XP</span></div><div class="progress"><span id="playerBar"></span></div><div class="muted" style="margin-top:5px;color:#ffd06b">★ <b id="skillPoints">1</b> ponto(s) de habilidade</div></div></div>
+  <div class="panel objectives"><div class="panel-title">♧ OBJETIVOS DA FASE</div><div class="muted" style="margin-bottom:8px">Zona Industrial • Fase 1</div>
+   <div class="objective" data-objective="waste"><span class="check"></span><span>Remover 20 resíduos</span><strong id="objWaste">0/20</strong></div>
+   <div class="objective" data-objective="scrap"><span class="check"></span><span>Coletar 15 sucatas</span><strong id="objScrap">0/15</strong></div>
+   <div class="objective" data-objective="ore"><span class="check"></span><span>Extrair 10 minérios</span><strong id="objOre">0/10</strong></div>
+   <div class="objective" data-objective="generator"><span class="check"></span><span>Recuperar o gerador</span><strong id="objGenerator">0/1</strong></div>
+   <hr style="border:0;border-top:1px solid #64553d;margin:9px 0"><div class="panel-title" style="font-size:11px">RECOMPENSAS</div><div class="reward-row"><span class="reward">✦ 750 XP</span><span class="reward">⚙ 50 créditos</span><span class="reward">▣ 2 caixas</span></div>
+   <div class="muted" style="margin-top:8px">O gerador está marcado no mapa com um ícone de raio.</div>
+  </div>
+ </section>
+ <section class="hud right-stack">
+  <div class="panel map-panel"><div class="panel-title">⌖ ZONA INDUSTRIAL</div><div class="muted" style="font-size:9px;margin:-4px 0 7px">FASE 1 • PÁTIO DE RECUPERAÇÃO</div><div class="mini-map"><img id="miniImage" alt=""><span class="mini-dot"></span></div><div class="muted" style="margin-top:6px">A-03　• Você　◆ Recursos</div></div>
+  <div class="panel skills-summary"><div class="panel-title">⚙ HABILIDADES</div><div id="skillMini"></div><button class="full-btn" data-open="Habilidades">ABRIR ÁRVORE DE HABILIDADES</button></div>
+ </section>
+ <section class="panel hud bottom-inventory"><div class="weight">🎒<br><span id="weight">0</span> / 120 kg</div><div id="resourceTray" style="display:flex;gap:6px;align-items:center;flex:1;justify-content:space-around"></div></section>
+ <div class="panel hud activity" id="activity"><div class="activity-title" id="activityTitle">Trabalhando...</div><div class="activity-sub" id="activitySub">O trabalhador está executando a atividade.</div><div class="progress"><span id="activityBar"></span></div></div>
+ <div class="panel hud status" id="status">Bem-vindo ao pátio A-03. Clique em um depósito para começar.</div><div class="toast" id="toast"></div>
+ <section class="panel modal" id="modal"><div class="modal-head"><h2 id="modalTitle">Habilidades</h2><button class="close" id="closeModal">Fechar ✕</button></div><div id="modalBody"></div></section>
+</main>
+</div>
+<script>
+(()=>{
+"use strict";
+const BG_SRC="assets/industrial_map.png";
+const $=id=>document.getElementById(id);
+const canvas=$("world"),ctx=canvas.getContext("2d");
+const bgImg=new Image();bgImg.src=BG_SRC;const workerSprite=new Image();workerSprite.src="assets/worker_painted.png";$("miniImage").src=BG_SRC;
+const SKILLS=["Mineração","Limpeza","Engenharia","Mecânica","Logística"];
+const TASKS={
+ ore:{name:"Depósito de minério de ferro",short:"Minério de ferro",skill:"Mineração",xp:14,time:3.0,min:3,max:5,item:"Minério de Ferro",pos:[790,390],icon:"⛏"},
+ scrap:{name:"Pilha de sucata",short:"Sucata",skill:"Engenharia",xp:10,time:2.5,min:2,max:4,item:"Sucata",pos:[1110,600],icon:"⚙"},
+ waste:{name:"Resíduos industriais",short:"Resíduo industrial",skill:"Limpeza",xp:12,time:2.8,min:2,max:5,item:"Resíduo",pos:[285,555],icon:"☣"},
+ crate:{name:"Caixa de componentes",short:"Componentes",skill:"Mecânica",xp:16,time:3.3,min:1,max:2,item:"Componentes",pos:[430,480],icon:"▣"},
+ generator:{name:"Gerador principal",short:"Gerador A-03",skill:"Mecânica",xp:60,time:5.5,item:"",min:0,max:0,pos:[1080,285],icon:"⚡",generator:true}
+};
+const NODE_DEFS=[
+ {id:"mine_yield",branch:"Mineração",name:"Golpe preciso",desc:"+1 minério por extração.",cost:1,req:null,effect:"+1 minério",},
+ {id:"mine_speed",branch:"Mineração",name:"Ritmo de extração",desc:"Mineração 15% mais rápida.",cost:1,req:"mine_yield",effect:"−15% tempo"},
+ {id:"mine_vein",branch:"Mineração",name:"Leitura de veios",desc:"Chance de encontrar minério extra.",cost:2,req:"mine_speed",effect:"+20% chance extra"},
+ {id:"clean_yield",branch:"Limpeza",name:"Sucção reforçada",desc:"+1 resíduo por limpeza.",cost:1,req:null,effect:"+1 resíduo"},
+ {id:"clean_speed",branch:"Limpeza",name:"Filtro de fluxo",desc:"Limpeza 15% mais rápida.",cost:1,req:"clean_yield",effect:"−15% tempo"},
+ {id:"clean_recycle",branch:"Limpeza",name:"Triagem química",desc:"Chance de recuperar sucata ao limpar.",cost:2,req:"clean_speed",effect:"+20% sucata"},
+ {id:"eng_scrap",branch:"Engenharia",name:"Olho para sucata",desc:"+1 sucata por desmontagem.",cost:1,req:null,effect:"+1 sucata"},
+ {id:"eng_parts",branch:"Engenharia",name:"Peças reaproveitáveis",desc:"Chance de obter componente extra.",cost:2,req:"eng_scrap",effect:"+20% componentes"},
+ {id:"mech_repair",branch:"Mecânica",name:"Mecânico cuidadoso",desc:"Reparo do gerador 20% mais rápido.",cost:1,req:null,effect:"−20% reparo"},
+ {id:"mech_master",branch:"Mecânica",name:"Diagnóstico avançado",desc:"Reparar o gerador concede +1 ponto de habilidade.",cost:2,req:"mech_repair",effect:"+1 ponto"},
+ {id:"logistics_step",branch:"Logística",name:"Passo leve",desc:"Caminhada 20% mais rápida.",cost:1,req:null,effect:"+20% velocidade"},
+ {id:"logistics_pack",branch:"Logística",name:"Mochila reforçada",desc:"Capacidade de carga +40 kg.",cost:1,req:"logistics_step",effect:"+40 kg"}
+];
+const defaults=()=>({resources:{"Minério de Ferro":0,"Sucata":0,"Resíduo":0,"Componentes":0,"Peças":0,"Engrenagens":0},skills:Object.fromEntries(SKILLS.map(s=>[s,{level:1,xp:0}])),level:1,xp:0,skillPoints:1,unlockedNodes:[],actions:0,objective:{waste:0,scrap:0,ore:0,generator:false},equipment:{"Picareta básica":true,"Aspirador portátil":true,"Detector simples":false,"Chave inglesa":true},equipped:"Picareta básica",pickaxeTier:1});
+let state=defaults();
+let player={x:580,y:520,target:null,phase:"idle",work:0,walkCycle:0,facingLeft:false,toolAngle:0};
+let worldW=1280,worldH=720,last=performance.now(),ambientTime=0,particles=[],toastTimeout=null,currentTab="Mapa";
+const ambientLeaves=Array.from({length:20},(_,i)=>({x:(i*173+53)%1280,y:(i*97+80)%720,phase:i*.7,speed:.3+(i%4)*.1,size:2+(i%3)}));
+const smokeSources=[{x:500,y:80},{x:970,y:100},{x:1120,y:120},{x:150,y:270}];
+const playerNeed=()=>Math.floor(250+Math.pow(state.level,1.6)*100);
+const skillNeed=l=>Math.floor(70+Math.pow(l,1.72)*24);
+function save(){try{localStorage.setItem("ironworks-save-v2",JSON.stringify(state));setStatus("Progresso salvo neste navegador.");}catch(e){setStatus("Não foi possível salvar neste navegador.");}}
+function saveQuiet(){try{localStorage.setItem("ironworks-save-v2",JSON.stringify(state));}catch(e){}}
+function load(){try{const raw=localStorage.getItem("ironworks-save-v2");if(!raw)return;const old=JSON.parse(raw),fresh=defaults();state={...fresh,...old,resources:{...fresh.resources,...old.resources},skills:{...fresh.skills,...old.skills},objective:{...fresh.objective,...old.objective},equipment:{...fresh.equipment,...old.equipment},unlockedNodes:Array.isArray(old.unlockedNodes)?old.unlockedNodes:[]};}catch(e){state=defaults();}}
+function setStatus(t){$("status").textContent=t;}
+function notify(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove("show"),2400);}
+function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.floor(r.width*d));canvas.height=Math.max(1,Math.floor(r.height*d));ctx.setTransform(d,0,0,d,0,0);worldW=r.width;worldH=r.height;}
+new ResizeObserver(resize).observe(canvas);window.addEventListener("resize",resize);
+function worldPoint(p){return{x:p[0]*worldW/1280,y:p[1]*worldH/720};}
+function rand(min,max){return min+Math.random()*(max-min);}
+function addParticles(x,y,count,color,spread=1){for(let i=0;i<count;i++)particles.push({x,y,vx:rand(-35,35)*spread,vy:rand(-65,-10)*spread,life:rand(.35,.9),max:1,color,size:rand(1.5,4)});}
+function strokePath(points,color,width){ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap="round";ctx.stroke();}
+function roundRect(x,y,w,h,r,fill,stroke){ctx.beginPath();ctx.roundRect(x,y,w,h,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}}
+function drawBackground(){
+ const w=worldW,h=worldH;
+ if(bgImg.complete&&bgImg.naturalWidth){const scale=Math.max(w/bgImg.width,h/bgImg.height),dw=bgImg.width*scale,dh=bgImg.height*scale;ctx.drawImage(bgImg,(w-dw)/2,(h-dh)/2,dw,dh);}
+ else{ctx.fillStyle="#4c5846";ctx.fillRect(0,0,w,h);}
+ // Moving smoke/steam from factory stacks.
+ smokeSources.forEach((s,i)=>{for(let j=0;j<4;j++){let t=(ambientTime*.22+j*.24+i*.13)%1,x=(s.x+Math.sin(ambientTime*.8+j+i)*14)*w/1280,y=(s.y-t*100)*h/720;ctx.globalAlpha=(1-t)*.19;ctx.fillStyle=i%2?"#d9d5c7":"#c3c6ba";ctx.beginPath();ctx.ellipse(x,y,7+t*15,5+t*12,0,0,Math.PI*2);ctx.fill();} });ctx.globalAlpha=1;
+ // Gentle puddle shimmer.
+ for(let i=0;i<5;i++){let x=(245+i*156+Math.sin(ambientTime*1.4+i)*8)*w/1280,y=(600+(i%2)*40+Math.cos(ambientTime+i)*4)*h/720;ctx.globalAlpha=.11+.07*Math.sin(ambientTime*2+i);strokePath([[x-15,y],[x+10,y-2],[x+27,y+1]],"#b7c9af",2); }ctx.globalAlpha=1;
+ // Tiny moving leaves near the overgrown factory edges.
+ ambientLeaves.forEach((leaf,i)=>{let x=(leaf.x+Math.sin(ambientTime*leaf.speed+leaf.phase)*7)*w/1280,y=(leaf.y+Math.cos(ambientTime*.4+leaf.phase)*3)*h/720;ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(ambientTime+leaf.phase)*.7);ctx.fillStyle=i%2?"#86a34c":"#587e3d";ctx.globalAlpha=.65;ctx.beginPath();ctx.ellipse(0,0,leaf.size*1.6,leaf.size*.7,0,0,Math.PI*2);ctx.fill();ctx.restore();});ctx.globalAlpha=1;
+ // Small grass tufts sway in place, preserving the painted map's original palette.
+ const grassTufts=[[65,610],[145,675],[245,650],[365,695],[520,660],[690,690],[865,675],[1010,655],[1190,650],[1240,590],[170,430],[1140,470]];
+ grassTufts.forEach(([gx,gy],i)=>{const x=gx*w/1280,y=gy*h/720,wind=Math.sin(ambientTime*2.1+i*.8)*5;ctx.save();ctx.translate(x,y);ctx.strokeStyle=i%2?"#7e9e4c":"#688c43";ctx.lineWidth=2;ctx.globalAlpha=.8;for(let k=0;k<3;k++){ctx.beginPath();ctx.moveTo((k-1)*3,0);ctx.quadraticCurveTo((k-1)*5+wind*.4,-8,(k-1)*7+wind,-15-(k%2)*4);ctx.stroke();}ctx.restore();});ctx.globalAlpha=1;
+ // Existing factory lamps gently flicker; no new light sources alter the scene design.
+ [[342,202],[455,176],[520,226],[1020,90]].forEach(([lx,ly],i)=>{const pulse=.25+.18*Math.sin(ambientTime*(2.2+i*.3)+i);const x=lx*w/1280,y=ly*h/720;const grad=ctx.createRadialGradient(x,y,2,x,y,36);grad.addColorStop(0,`rgba(255,190,91,${pulse})`);grad.addColorStop(1,"rgba(255,177,70,0)");ctx.fillStyle=grad;ctx.beginPath();ctx.arc(x,y,36,0,Math.PI*2);ctx.fill();});
+ // Rotating factory fan/gear in the upper industrial area.
+ const gx=995*w/1280,gy=205*h/720;ctx.save();ctx.translate(gx,gy);ctx.rotate(ambientTime*.75);ctx.strokeStyle="#d5a04d";ctx.lineWidth=4;for(let i=0;i<8;i++){ctx.rotate(Math.PI/4);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-17);ctx.stroke();}ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.fillStyle="#292d28";ctx.fill();ctx.restore();
+ // Warning beacon flicker.
+ const blink=.55+.45*Math.sin(ambientTime*5);ctx.globalAlpha=blink;ctx.fillStyle="#ffb342";ctx.beginPath();ctx.arc(1125*w/1280,292*h/720,5+blink*3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+ // Drifting motes and action particles.
+ particles=particles.filter(p=>p.life>0);particles.forEach(p=>{p.x+=p.vx*.016;p.y+=p.vy*.016;p.vy+=18*.016;p.life-=.016;ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x*w/1280,p.y*h/720,p.size,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;
+}
+function drawGenerator(){
+ const p=worldPoint(TASKS.generator.pos),x=p.x,y=p.y;
+ ctx.save();ctx.translate(x,y);
+ // Compact, grounded industrial generator with bevelled housing, vents, pipework and warning lamps.
+ ctx.fillStyle="#11150f99";ctx.beginPath();ctx.ellipse(0,30,62,17,0,0,Math.PI*2);ctx.fill();
+ // Feet and lower frame
+ ctx.fillStyle="#252b25";ctx.fillRect(-48,14,96,10);ctx.fillStyle="#8b673d";ctx.fillRect(-42,20,12,7);ctx.fillRect(30,20,12,7);
+ // Main casing with angled side panel
+ ctx.beginPath();ctx.moveTo(-45,-39);ctx.lineTo(31,-39);ctx.lineTo(48,-27);ctx.lineTo(48,13);ctx.lineTo(-45,13);ctx.closePath();ctx.fillStyle="#51584d";ctx.fill();ctx.strokeStyle="#252d27";ctx.lineWidth=4;ctx.stroke();
+ ctx.beginPath();ctx.moveTo(-45,-39);ctx.lineTo(31,-39);ctx.lineTo(31,-29);ctx.lineTo(-45,-29);ctx.closePath();ctx.fillStyle="#9a713e";ctx.fill();
+ // Front control panel
+ ctx.fillStyle="#242d27";ctx.fillRect(-31,-22,34,28);ctx.strokeStyle="#ad854a";ctx.lineWidth=2;ctx.strokeRect(-31,-22,34,28);
+ for(let i=0;i<4;i++){ctx.fillStyle=i%2?"#9aa18d":"#b77739";ctx.fillRect(-26+i*7,-17,4,16);}
+ // Side ventilation grille
+ ctx.fillStyle="#303a32";ctx.fillRect(10,-23,28,30);for(let i=0;i<5;i++){ctx.strokeStyle="#b28a4d";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(13,-19+i*6);ctx.lineTo(35,-19+i*6);ctx.stroke();}
+ // Exhaust pipe, elbow and muffler
+ ctx.strokeStyle="#222b27";ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(23,-39);ctx.lineTo(23,-53);ctx.lineTo(39,-53);ctx.stroke();ctx.strokeStyle="#a66e3e";ctx.lineWidth=5;ctx.stroke();
+ ctx.fillStyle="#5b6257";ctx.fillRect(34,-62,11,15);ctx.strokeStyle="#272e28";ctx.lineWidth=2;ctx.strokeRect(34,-62,11,15);
+ // Bolts and label plate
+ ctx.fillStyle="#d0a15a";[[-38,-31],[39,-28],[-38,7],[40,8]].forEach(([a,b])=>{ctx.beginPath();ctx.arc(a,b,2,0,Math.PI*2);ctx.fill();});
+ ctx.fillStyle="#d7c49a";ctx.font="bold 7px Arial";ctx.textAlign="center";ctx.fillText("A-03",0,1);
+ // warning light
+ const blink=.5+.5*Math.sin(ambientTime*3.6);ctx.fillStyle=state.objective.generator?"#9bd46b":`rgba(236,83,54,${.55+.45*blink})`;ctx.beginPath();ctx.arc(-20,-47,4,0,Math.PI*2);ctx.fill();ctx.shadowColor="#f26a45";ctx.shadowBlur=9*blink;ctx.beginPath();ctx.arc(-20,-47,3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+ if(!state.objective.generator){ctx.strokeStyle="#e5b34f99";ctx.lineWidth=1.5;ctx.setLineDash([3,4]);ctx.beginPath();ctx.ellipse(0,0,61,39,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
+ ctx.restore();
+}
+function drawTargetMarkers(){
+ Object.entries(TASKS).forEach(([key,a])=>{
+  if(key==="generator"&&state.objective.generator)return;
+  const p=worldPoint(a.pos),hot=player.target===key;
+  ctx.save();ctx.beginPath();ctx.ellipse(p.x,p.y+6,hot?37:29,hot?18:14,0,0,Math.PI*2);ctx.fillStyle=hot?"#f4b33b55":"#f0b33b20";ctx.fill();ctx.strokeStyle=hot?"#ffd46b":"#e9bd5a";ctx.lineWidth=hot?3:1.8;ctx.stroke();
+  roundRect(p.x-15,p.y-40,30,28,7,"#171a15eF","#d29a43");ctx.fillStyle="#ffe1a1";ctx.font="bold 16px Arial";ctx.textAlign="center";ctx.fillText(a.icon,p.x,p.y-20);
+  ctx.fillStyle="#151912e8";const label=key==="generator"?"GERADOR A-03":a.short;ctx.font="bold 10px Arial";const tw=ctx.measureText(label).width+14;roundRect(p.x-tw/2,p.y+27,tw,18,4,"#151912db",null);ctx.fillStyle="#f5e8ca";ctx.fillText(label,p.x,p.y+40);
+  if(key==="generator"&&!state.objective.generator){ctx.fillStyle="#ffca58";ctx.font="bold 9px Arial";ctx.fillText("RECUPERAR",p.x,p.y+57);}
+  ctx.restore();
+ });
+}
+function lineLimb(x1,y1,x2,y2,width,color){strokePath([[x1,y1],[x2,y2]],"#201f1a",width+3);strokePath([[x1,y1],[x2,y2]],color,width);}
+function drawCharacter(){
+ const x=player.x*worldW/1280,y=player.y*worldH/720;
+ const moving=player.phase==="walk",working=player.phase==="work";
+ const stride=moving?Math.sin(player.walkCycle)*2.8:0;
+ const bob=moving?Math.abs(Math.sin(player.walkCycle*2))*3:working?Math.sin(ambientTime*12)*1.5:0;
+ const lean= moving ? Math.sin(player.walkCycle)*.035 : working ? Math.sin(ambientTime*9)*.025 : 0;
+ ctx.save();ctx.translate(x,y+bob);ctx.scale(player.facingLeft?-1:1,1);
+ // Contact shadow and selected-worker ring
+ ctx.fillStyle="#090d0bb0";ctx.beginPath();ctx.ellipse(0,1,24,7,0,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle=working?"#f4c456":"#86b85b";ctx.lineWidth=2;ctx.globalAlpha=.75;ctx.beginPath();ctx.ellipse(0,2,29,9,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+ if(workerSprite.complete&&workerSprite.naturalWidth){
+   const height=104,width=height*workerSprite.width/workerSprite.height;
+   ctx.translate(0,-height+7);
+   ctx.rotate(lean);
+   // The original painted worker is preserved; a subtle stride/bob/lean sells movement without replacing his art.
+   ctx.drawImage(workerSprite,-width/2+stride,-height*.04,width,height);
+   if(working){
+     const swing=Math.sin(ambientTime*(player.target==="ore"?17:11))*.055;
+     ctx.translate(width*.17,height*.48);ctx.rotate(swing);ctx.translate(-width*.17,-height*.48);
+     if(Math.random()<.22){ctx.globalAlpha=.7;ctx.fillStyle=player.target==="ore"?"#ffd47b":"#d5b16b";ctx.beginPath();ctx.arc(width*.28,height*.63,2+Math.random()*2,0,Math.PI*2);ctx.fill();}
+   }
+ }else{
+   ctx.fillStyle="#d58b32";ctx.fillRect(-11,-67,22,35);ctx.beginPath();ctx.arc(0,-76,10,0,7);ctx.fillStyle="#d8a16d";ctx.fill();
+ }
+ ctx.restore();
+}
+function polyBody(){ctx.beginPath();ctx.moveTo(-12,-59);ctx.lineTo(12,-59);ctx.lineTo(16,-31);ctx.lineTo(-16,-31);ctx.closePath();ctx.fillStyle="#bf742e";ctx.fill();ctx.strokeStyle="#33291e";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle="#e8bd51";ctx.fillRect(-13,-43,26,4);ctx.fillStyle="#353a32";ctx.fillRect(-3,-54,6,20);}
+function draw(){
+ ctx.clearRect(0,0,worldW,worldH);drawBackground();drawGenerator();drawTargetMarkers();
+ if(player.phase==="walk"&&player.target){const p=worldPoint(TASKS[player.target].pos);ctx.save();ctx.setLineDash([7,6]);ctx.strokeStyle="#ffe08a";ctx.lineWidth=3;ctx.globalAlpha=.85;ctx.beginPath();ctx.moveTo(player.x*worldW/1280,player.y*worldH/720);ctx.lineTo(p.x,p.y+22);ctx.stroke();ctx.restore();}
+ drawCharacter();
+}
+function grantSkillPoints(newLevel){
+ let earned=1;if(newLevel%5===0)earned+=1;if(newLevel%10===0)earned+=1;
+ state.skillPoints+=earned;notify("Nível "+newLevel+"! +"+earned+" ponto(s) de habilidade."); 
+}
+function gainSkill(skill,amount){const s=state.skills[skill];s.xp+=amount;while(s.level<100&&s.xp>=skillNeed(s.level)){s.xp-=skillNeed(s.level);s.level++;notify(skill+" chegou ao nível "+s.level+"!");}}
+function gainPlayer(amount){state.xp+=amount;while(state.xp>=playerNeed()){state.xp-=playerNeed();state.level++;grantSkillPoints(state.level);}}
+function unlocked(id){return state.unlockedNodes.includes(id);}
+function hasNode(id){return unlocked(id);}
+function effect(id){return hasNode(id);}
+function startAction(key){
+ if(player.phase!=="idle"){notify("Termine a atividade atual primeiro.");return;}
+ const a=TASKS[key];
+ if(key==="generator"){
+  if(state.objective.generator){notify("O gerador A-03 já foi recuperado.");return;}
+  if(state.objective.waste<20||state.objective.scrap<15||state.objective.ore<10){notify("Antes de recuperar o gerador, conclua os 3 objetivos de coleta.");setStatus("Requisitos: 20 resíduos, 15 sucatas e 10 minérios.");return;}
+ }
+ player.target=key;player.phase="walk";player.work=0;sound("click");const p=worldPoint(a.pos);player.facingLeft=p.x<player.x*worldW/1280;setActivity(true,"Caminhando até "+a.short+"...","O trabalhador está se deslocando até o alvo.");$("activityBar").style.width="0%";setStatus("Caminhando até "+a.name+".");
+}
+function setActivity(show,title,sub){$("activity").classList.toggle("show",show);$("activityTitle").textContent=title;$("activitySub").textContent=sub;}
+function finishAction(){
+ const key=player.target,a=TASKS[key];
+ if(key==="generator"){
+  state.objective.generator=true;sound("level");gainSkill("Mecânica",a.xp);gainPlayer(100);
+  if(hasNode("mech_master")){state.skillPoints++;notify("Diagnóstico avançado: +1 ponto de habilidade.");}
+  player.phase="idle";player.target=null;setActivity(false);setStatus("GERADOR RECUPERADO! O pátio A-03 voltou a operar.");notify("Fase concluída! Gerador A-03 restaurado.");renderAll();saveQuiet();return;
+ }
+ let amount=Math.floor(Math.random()*(a.max-a.min+1))+a.min;
+ if(key==="ore"&&effect("mine_yield"))amount+=1;
+ if(key==="scrap"&&effect("eng_scrap"))amount+=1;
+ if(key==="waste"&&effect("clean_yield"))amount+=1;
+ if(key==="ore"&&effect("mine_vein")&&Math.random()<.2)amount+=2;
+ if(key==="waste"&&effect("clean_recycle")&&Math.random()<.2)state.resources["Sucata"]+=1;
+ if(key==="scrap"&&effect("eng_parts")&&Math.random()<.2)state.resources["Componentes"]+=1;
+ state.resources[a.item]+=amount;gainSkill(a.skill,a.xp);gainPlayer(8+amount*2);state.actions++;
+ if(key==="waste")state.objective.waste+=amount;if(key==="scrap")state.objective.scrap+=amount;if(key==="ore")state.objective.ore+=amount;
+ const p=worldPoint(a.pos);addParticles(p.x/ worldW*1280,p.y/worldH*720,key==="ore"?14:9,key==="ore"?"#ffc16a":key==="waste"?"#9fd5c3":"#e8b65f",1.2);
+ player.phase="idle";player.target=null;setActivity(false);setStatus("+"+amount+" "+a.item+" • +"+a.xp+" XP em "+a.skill+".");notify("+"+amount+" "+a.item+"  |  +"+a.xp+" XP");renderAll();saveQuiet();
+}
+function tick(now){
+ const dt=Math.min((now-last)/1000,.05);last=now;ambientTime+=dt;
+ if(player.phase==="walk"&&player.target){
+  const p=worldPoint(TASKS[player.target].pos),tx=p.x/worldW*1280,ty=(p.y+26)/worldH*720,dx=tx-player.x,dy=ty-player.y,dist=Math.hypot(dx,dy);
+  player.facingLeft=dx<0;player.walkCycle+=dt*13*(effect("logistics_step")?1.2:1);if(now-lastFootstep>420){sound("walk");lastFootstep=now;}
+  const speed=185*(effect("logistics_step")?1.2:1);
+  if(dist<6){player.x=tx;player.y=ty;player.phase="work";player.work=0;const a=TASKS[player.target];sound(player.target==="ore"?"mine":player.target==="waste"?"clean":player.target==="generator"?"repair":"scrap");setActivity(true,"Trabalhando: "+a.short,"Preparando equipamento...");}
+  else{player.x+=dx/dist*speed*dt;player.y+=dy/dist*speed*dt;}
+ }else if(player.phase==="work"){
+  const a=TASKS[player.target];let duration=a.time;
+  if(player.target==="ore"&&effect("mine_speed"))duration*=.85;
+  if(player.target==="waste"&&effect("clean_speed"))duration*=.85;
+  if(player.target==="generator"&&effect("mech_repair"))duration*=.8;
+  player.work+=dt;const pct=Math.min(1,player.work/duration);$("activityBar").style.width=(pct*100)+"%";
+  $("activitySub").textContent=player.target==="ore"?"Picareta golpeando o minério... "+Math.round(pct*100)+"%":player.target==="waste"?"Aspirador removendo resíduos... "+Math.round(pct*100)+"%":player.target==="scrap"?"Desmontando e separando sucata... "+Math.round(pct*100)+"%":player.target==="crate"?"Verificando componentes... "+Math.round(pct*100)+"%":"Conectando cabos e reparando o gerador... "+Math.round(pct*100)+"%";
+  const p=worldPoint(TASKS[player.target].pos);if(Math.random()<.7)addParticles(p.x,p.y-10,1,player.target==="ore"?"#ffd083":player.target==="waste"?"#a9d8c4":"#e9ad53",.5);
+  if(pct>=1)finishAction();
+ }
+ if(player.phase!=="idle"){const px=player.x*worldW/1280,py=player.y*worldH/720;$("activity").style.left=Math.max(100,Math.min(worldW-100,px))+"px";$("activity").style.top=Math.max(65,py-118)+"px";}draw();requestAnimationFrame(tick);
+}
+function renderResources(){
+ const tray=$("resourceTray");tray.innerHTML="";const icons={"Minério de Ferro":"🪨","Sucata":"⚙","Resíduo":"☣","Componentes":"🔩","Peças":"🧰","Engrenagens":"⚙"};let weight=0;
+ Object.entries(state.resources).forEach(([name,n])=>{weight+=n;const div=document.createElement("div");div.className="resource";div.innerHTML=`<span class="emoji">${icons[name]||"⚙"}</span><span class="amount">${n}</span><div class="name">${name}</div>`;tray.appendChild(div);});
+ $("weight").textContent=weight;
+}
+function renderPlayer(){$("playerLevel").textContent=state.level;$("playerXp").textContent=state.xp;$("playerNeed").textContent=playerNeed();$("playerBar").style.width=(state.xp/playerNeed()*100)+"%";$("skillPoints").textContent=state.skillPoints;}
+function renderObjectives(){
+ const pairs=[["waste",state.objective.waste,20,"objWaste"],["scrap",state.objective.scrap,15,"objScrap"],["ore",state.objective.ore,10,"objOre"]];
+ pairs.forEach(([key,n,max,id])=>{const row=document.querySelector(`[data-objective="${key}"]`);$(id).textContent=Math.min(n,max)+"/"+max;row.classList.toggle("done",n>=max);row.querySelector(".check").textContent=n>=max?"✓":"";});
+ const gr=document.querySelector('[data-objective="generator"]');$("objGenerator").textContent=state.objective.generator?"1/1":"0/1";gr.classList.toggle("done",state.objective.generator);gr.querySelector(".check").textContent=state.objective.generator?"✓":"";
+}
+function renderSkillsMini(){$("skillMini").innerHTML="";SKILLS.forEach(name=>{const s=state.skills[name],need=skillNeed(s.level),row=document.createElement("div");row.className="skill-mini";row.innerHTML=`<span>${name}</span><span class="skill-level">Nv. ${s.level}</span><div class="progress"><span style="width:${s.xp/need*100}%"></span></div>`;$("skillMini").appendChild(row);});}
+function renderAll(){renderResources();renderPlayer();renderObjectives();renderSkillsMini();}
+function makeCard(title,desc,cost,action,disabled=false){const c=document.createElement("div");c.className="card";c.innerHTML=`<h3>${title}</h3><p>${desc}</p><p style="color:#e9c477">${cost||""}</p>`;if(action){const b=document.createElement("button");b.textContent="FABRICAR / USAR";b.disabled=disabled;b.onclick=action;c.appendChild(b);}return c;}
+function openModal(tab){
+ currentTab=tab;document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+ if(tab==="Mapa"){closeModal();return;}
+ $("modalTitle").textContent=tab;$("modalBody").innerHTML="";
+ if(tab==="Habilidades"){renderSkillTree();}
+ else if(tab==="Fabricação"){
+  $("modalBody").innerHTML='<p class="muted">Use os materiais recolhidos para fabricar melhorias. As receitas avançadas serão liberadas por região e nível.</p>';
+  $("modalBody").appendChild(makeCard("Picareta reforçada","+1 minério adicional por extração (além dos talentos).","12 Sucata + 5 Minério de Ferro",()=>craft("Picareta reforçada",{"Sucata":12,"Minério de Ferro":5}),state.equipment["Picareta reforçada"]));
+  $("modalBody").appendChild(makeCard("Detector simples","Permite localizar caixas de componentes escondidas nas próximas fases.","8 Sucata + 4 Componentes",()=>craft("Detector simples",{"Sucata":8,"Componentes":4}),state.equipment["Detector simples"]));
+  $("modalBody").appendChild(makeCard("Kit de manutenção","Melhora a eficiência das intervenções mecânicas.","5 Sucata + 3 Componentes",()=>craft("Kit de manutenção",{"Sucata":5,"Componentes":3}),state.equipment["Kit de manutenção"]));
+ }else if(tab==="Equipamentos"){
+  $("modalBody").innerHTML=`<p class="muted">Equipamentos disponíveis para o trabalhador.</p>`;
+  Object.entries(state.equipment).forEach(([name,owned])=>$("modalBody").appendChild(makeCard(name,owned?"Equipamento disponível.":"Ainda não fabricado.",owned?"Possuído":"Bloqueado",owned?()=>{state.equipped=name;notify(name+" equipado.");saveQuiet();openModal("Equipamentos");}:null,!owned)));
+  $("modalBody").appendChild(makeCard("Ferramenta atualmente equipada",state.equipped,"",null));
+ }else if(tab==="Missões"){
+  const pairs=[["Remover resíduos",state.objective.waste,20],["Coletar sucatas",state.objective.scrap,15],["Extrair minérios",state.objective.ore,10]];
+  pairs.forEach(([n,v,m])=>$("modalBody").appendChild(makeCard(n,Math.min(v,m)+" / "+m+" concluído",v>=m?"Concluído":"Em andamento",null)));
+  $("modalBody").appendChild(makeCard("Recuperar gerador A-03",state.objective.generator?"Gerador restaurado.":"Depois de concluir as três metas de coleta, clique no gerador marcado com ⚡ no canto superior direito do pátio.",state.objective.generator?"Concluído":"Requer 20 resíduos, 15 sucatas e 10 minérios",null));
+ }else if(tab==="Base"){
+  $("modalBody").appendChild(makeCard("Armazém","Materiais armazenados: "+Object.values(state.resources).reduce((a,b)=>a+b,0)+" unidades.","Operacional",null));
+  $("modalBody").appendChild(makeCard("Bancada de manutenção","Fabricação e reparo de equipamentos.","Próxima melhoria",null));
+  $("modalBody").appendChild(makeCard("Fundição","Transforme minérios em materiais industriais.","Ainda não desbloqueada",null));
+ }
+ $("modal").classList.add("show");
+}
+function renderSkillTree(){
+ const body=$("modalBody");
+ body.innerHTML=`<div class="tree-intro"><div><b>Escolha seu caminho de especialização</b><div class="muted">Os pontos são permanentes. Cada nível de trabalhador concede 1 ponto; nos níveis 5 e 10 há bônus adicionais.</div></div><div class="points">✦ ${state.skillPoints} pontos</div></div><p class="tree-legend">Os nós seguem uma trilha: desbloqueie o primeiro para liberar os próximos. Você pode investir em mais de uma especialização.</p><div class="tree-grid" id="treeGrid"></div>`;
+ const grid=body.querySelector("#treeGrid");
+ const branches=[["Mineração","⛏"],["Limpeza","☣"],["Engenharia","⚙"],["Mecânica","🔧"],["Logística","🎒"]];
+ branches.forEach(([branch,icon])=>{
+  const box=document.createElement("div");box.className="branch";box.innerHTML=`<h3>${icon} ${branch}</h3>`;
+  NODE_DEFS.filter(n=>n.branch===branch).forEach(n=>{
+   const own=unlocked(n.id),reqOk=!n.req||unlocked(n.req),can=state.skillPoints>=n.cost&&reqOk&&!own;
+   const node=document.createElement("div");node.className="node "+(own?"unlocked":!reqOk?"locked":"");
+   node.innerHTML=`<strong>${own?"✓ ":""}${n.name}</strong><p>${n.desc}</p><div class="node-meta">${own?"ADQUIRIDO":`CUSTO: ${n.cost} ponto(s)${!reqOk?" • REQUER NÓ ANTERIOR":""}`}</div>`;
+   const btn=document.createElement("button");btn.textContent=own?"OK":"ADQUIRIR";btn.disabled=!can;
+   btn.onclick=()=>buyNode(n.id);node.appendChild(btn);box.appendChild(node);
+  });
+  grid.appendChild(box);
+ });
+}
+function buyNode(id){
+ const n=NODE_DEFS.find(n=>n.id===id);if(!n||unlocked(id)||state.skillPoints<n.cost||(n.req&&!unlocked(n.req)))return;
+ state.skillPoints-=n.cost;state.unlockedNodes.push(id);notify("Habilidade adquirida: "+n.name);saveQuiet();renderAll();renderSkillTree();
+}
+function craft(name,cost){
+ for(const [item,n] of Object.entries(cost))if((state.resources[item]||0)<n){notify("Materiais insuficientes: "+item+".");return;}
+ for(const [item,n] of Object.entries(cost))state.resources[item]-=n;
+ state.equipment[name]=true;if(name==="Picareta reforçada")state.pickaxeTier=2;
+ gainSkill("Engenharia",25);notify(name+" fabricado!");saveQuiet();renderAll();openModal("Fabricação");
+}
+function closeModal(){$("modal").classList.remove("show");}
+// Lightweight synthesized sound effects; no external downloads required.
+let audioCtx=null,soundEnabled=true,lastFootstep=0;
+function sound(type){
+ if(!soundEnabled)return;
+ try{
+  audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended")audioCtx.resume();
+  const now=audioCtx.currentTime,osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+  const filter=audioCtx.createBiquadFilter();filter.type="lowpass";filter.frequency.value=type==="mine"?900:1500;
+  osc.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);
+  const settings={click:[420,.045],walk:[95,.035],mine:[155,.13],scrap:[260,.10],clean:[520,.07],repair:[340,.15],level:[660,.22],collect:[780,.09]};
+  const [freq,duration]=settings[type]||settings.click;
+  osc.type=type==="walk"?"triangle":type==="mine"?"square":"sine";
+  osc.frequency.setValueAtTime(freq,now);osc.frequency.exponentialRampToValueAtTime(Math.max(45,freq*.55),now+duration);
+  gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(type==="walk"?.025:.065,now+.008);gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+  osc.start(now);osc.stop(now+duration+.01);
+ }catch(e){}
+}
+$("soundBtn").addEventListener("click",()=>{soundEnabled=!soundEnabled;$("soundBtn").textContent=soundEnabled?"🔊":"🔇";if(soundEnabled)sound("click");});
+canvas.addEventListener("click",e=>{
+ const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*1280,y=(e.clientY-r.top)/r.height*720;
+ let nearest="",dist=Infinity;
+ Object.entries(TASKS).forEach(([key,a])=>{const d=Math.hypot(a.pos[0]-x,a.pos[1]-y);if(d<dist){dist=d;nearest=key;}});
+ if(dist<65){startAction(nearest);}else setStatus("Clique em um recurso destacado ou no gerador ⚡ para interagir.");
+});
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>openModal(b.dataset.tab)));
+$("toggleLeft").addEventListener("click",()=>{const el=document.querySelector(".left-stack");el.classList.toggle("collapsed");$("toggleLeft").textContent=el.classList.contains("collapsed")?"›":"‹";});
+$("toggleRight").addEventListener("click",()=>{const el=document.querySelector(".right-stack");el.classList.toggle("collapsed");$("toggleRight").textContent=el.classList.contains("collapsed")?"‹":"›";});
+const tooltip=$("skillTooltip");document.addEventListener("pointerover",e=>{const n=e.target.closest(".node[title]");if(!n)return;tooltip.textContent=n.title;tooltip.style.display="block";});
+document.addEventListener("pointermove",e=>{if(tooltip.style.display==="block"){tooltip.style.left=Math.min(innerWidth-235,e.clientX+14)+"px";tooltip.style.top=Math.min(innerHeight-90,e.clientY+14)+"px";}});
+document.addEventListener("pointerout",e=>{if(e.target.closest(".node[title]"))tooltip.style.display="none";});
+document.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openModal(b.dataset.open)));
+$("closeModal").addEventListener("click",closeModal);
+$("saveBtn").addEventListener("click",save);
+$("resetBtn").addEventListener("click",()=>{if(confirm("Começar uma nova jornada? O progresso salvo neste navegador será apagado.")){state=defaults();player={x:580,y:520,target:null,phase:"idle",work:0,walkCycle:0,facingLeft:false};renderAll();closeModal();save();notify("Nova jornada iniciada.");}});
+window.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+load();renderAll();resize();$("soundBtn").textContent="🔊";setInterval(saveQuiet,30000);requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
