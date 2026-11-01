@@ -389,13 +389,18 @@ function drawTargetMarkers(){
   // Only add a soft locator glow; never redraw ore/scrap/waste as geometric shapes.
   if(key!=="generator"&&depleted<1){
    ctx.save();
-   const alpha=(.12+.12*pulse)*(1-depleted*.8)*(hot?2.1:1);
-   const radius=(hot?44:30)+pulse*5;
+   const isOre=key==="ore";
+   const alpha=(isOre?.28:.12+.12*pulse)*(1-depleted*.8)*(hot?2.1:1);
+   const radius=(isOre?58:hot?44:30)+pulse*(isOre?9:5);
    const glow=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,radius);
-   glow.addColorStop(0,`rgba(255,196,103,${alpha})`);
-   glow.addColorStop(.55,`rgba(222,171,91,${alpha*.45})`);
+   glow.addColorStop(0,isOre?`rgba(255,190,75,${alpha})`:`rgba(255,196,103,${alpha})`);
+   glow.addColorStop(.48,isOre?`rgba(255,116,35,${alpha*.65})`:`rgba(222,171,91,${alpha*.45})`);
    glow.addColorStop(1,"rgba(0,0,0,0)");
    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(p.x,p.y,radius,0,Math.PI*2);ctx.fill();
+   if(isOre){
+    ctx.globalAlpha=.5+.35*pulse;ctx.strokeStyle="#ffd36b";ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.ellipse(p.x,p.y+5,47+pulse*4,27+pulse*3,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#ffe39a";ctx.font="bold 12px Arial";ctx.textAlign="center";ctx.shadowColor="#ff8b25";ctx.shadowBlur=12;ctx.fillText("MINÉRIO • COLETÁVEL",p.x,p.y-48);
+   }
    ctx.restore();
   }
   if(hot||key==="generator"){
@@ -407,6 +412,58 @@ function drawTargetMarkers(){
  });
 }
 function lineLimb(x1,y1,x2,y2,width,color){strokePath([[x1,y1],[x2,y2]],"#201f1a",width+3);strokePath([[x1,y1],[x2,y2]],color,width);}
+
+const WALK_ZONE=[[360,285],[745,258],[930,300],[1080,390],[1115,455],[1050,535],[850,590],[620,605],[430,575],[345,470]];
+function pointInWalkZone(x,y){
+ let inside=false;
+ for(let i=0,j=WALK_ZONE.length-1;i<WALK_ZONE.length;j=i++){
+  const a=WALK_ZONE[i],b=WALK_ZONE[j];
+  if(((a[1]>y)!==(b[1]>y))&&(x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]))inside=!inside;
+ }
+ return inside;
+}
+function nearestWalkable(x,y){
+ if(pointInWalkZone(x,y))return{x,y};
+ let best=null,bd=Infinity;
+ for(let yy=285;yy<=610;yy+=5)for(let xx=345;xx<=1115;xx+=5){
+  if(!pointInWalkZone(xx,yy))continue;
+  const d=(xx-x)*(xx-x)+(yy-y)*(yy-y);
+  if(d<bd){bd=d;best={x:xx,y:yy};}
+ }
+ return best||{x:580,y:520};
+}
+function pathIsWalkable(x1,y1,x2,y2){
+ const d=Math.hypot(x2-x1,y2-y1),n=Math.max(1,Math.ceil(d/8));
+ for(let i=1;i<=n;i++){const t=i/n;if(!pointInWalkZone(x1+(x2-x1)*t,y1+(y2-y1)*t))return false;}
+ return true;
+}
+let workerRig=null;
+function buildWorkerRig(){
+ if(!workerSprite.complete||!workerSprite.naturalWidth||workerRig)return;
+ const w=workerSprite.naturalWidth,h=workerSprite.naturalHeight;
+ const parts={
+  head:[[.34,.00],[.73,.00],[.79,.18],[.72,.29],[.52,.32],[.35,.25]],
+  armBack:[[.19,.22],[.37,.20],[.43,.39],[.40,.59],[.30,.66],[.22,.53]],
+  armFront:[[.65,.25],[.84,.30],[.91,.49],[.86,.64],[.74,.63],[.67,.48]],
+  legBack:[[.25,.55],[.48,.56],[.52,.76],[.47,.98],[.28,.98],[.22,.79]],
+  legFront:[[.43,.56],[.68,.57],[.72,.79],[.70,.98],[.49,.99],[.42,.78]]
+ };
+ const makeLayer=poly=>{
+  const c=document.createElement("canvas");c.width=w;c.height=h;
+  const q=c.getContext("2d");q.drawImage(workerSprite,0,0);
+  q.globalCompositeOperation="destination-in";q.beginPath();
+  poly.forEach((p,i)=>i?q.lineTo(p[0]*w,p[1]*h):q.moveTo(p[0]*w,p[1]*h));q.closePath();q.fill();
+  return c;
+ };
+ const base=document.createElement("canvas");base.width=w;base.height=h;
+ const b=base.getContext("2d");b.drawImage(workerSprite,0,0);
+ b.globalCompositeOperation="destination-out";
+ Object.values(parts).forEach(poly=>{b.beginPath();poly.forEach((p,i)=>i?b.lineTo(p[0]*w,p[1]*h):b.moveTo(p[0]*w,p[1]*h));b.closePath();b.fill();});
+ workerRig={base,head:makeLayer(parts.head),armBack:makeLayer(parts.armBack),armFront:makeLayer(parts.armFront),legBack:makeLayer(parts.legBack),legFront:makeLayer(parts.legFront)};
+}
+function drawRigPart(layer,w,h,anchorX,anchorY,angle,scale=1){
+ ctx.save();ctx.translate(anchorX,anchorY);ctx.rotate(angle);ctx.scale(scale,scale);ctx.drawImage(layer,-w/2,-h*.04,w,h);ctx.restore();
+}
 function drawCharacter(){
  const x=player.x*worldW/1280,y=player.y*worldH/720;
  const moving=player.phase==="walk",working=player.phase==="work";
@@ -416,17 +473,30 @@ function drawCharacter(){
  ctx.save();ctx.translate(x,y+bob);ctx.scale(player.facingLeft?-1:1,1);
  ctx.fillStyle="#090d0bb0";ctx.beginPath();ctx.ellipse(0,2,23,7,0,0,Math.PI*2);ctx.fill();
  if(workerSprite.complete&&workerSprite.naturalWidth){
-  const height=104,width=height*workerSprite.width/workerSprite.height;
-  // Keep the original painted worker completely intact: no mismatched skeleton/limbs drawn over the sprite.
-  ctx.save();ctx.translate(stride*2.2,-height+7);ctx.rotate(moving?stride*.012:working?swing*.008:Math.sin(ambientTime*1.4)*.004);
-  ctx.drawImage(workerSprite,-width/2,-height*.04,width,height);ctx.restore();
-  // Tool is a separate prop held beside the body, with a task-specific arc and impact flash.
+  buildWorkerRig();
+  const height=116,width=height*workerSprite.width/workerSprite.height;
+  const cycle=moving?Math.sin(player.walkCycle):working?Math.sin(ambientTime*7):Math.sin(ambientTime*1.2)*.025;
+  const legSwing=moving?Math.sin(player.walkCycle)*.19:working?Math.sin(ambientTime*7)*.025:0;
+  const armSwing=moving?-Math.sin(player.walkCycle)*.13:working?Math.sin(ambientTime*8)*.12:0;
+  const bob=moving?Math.abs(Math.sin(player.walkCycle*2))*2.5:working?Math.sin(ambientTime*10)*1.2:0;
+  ctx.translate(0,bob);
+  if(workerRig){
+   ctx.save();ctx.translate(0,-height+7);ctx.rotate(moving?cycle*.012:working?swing*.008:Math.sin(ambientTime*1.4)*.004);
+   ctx.drawImage(workerRig.base,-width/2,-height*.04,width,height);
+   // Limbs and head are cut from the original painted sprite, preserving its exact textures and clothing.
+   drawRigPart(workerRig.legBack,width,height,-width*.10,-height*.34,legSwing*.78);
+   drawRigPart(workerRig.legFront,width,height,width*.06,-height*.34,-legSwing);
+   drawRigPart(workerRig.armBack,width,height,-width*.22,-height*.62,-armSwing);
+   drawRigPart(workerRig.armFront,width,height,width*.22,-height*.60,armSwing);
+   drawRigPart(workerRig.head,width,height,0,-height*.82,moving?Math.sin(player.walkCycle)*.025:Math.sin(ambientTime*1.3)*.012);
+   ctx.restore();
+  }else{
+   ctx.save();ctx.translate(stride*2.2,-height+7);ctx.rotate(moving?stride*.012:working?swing*.008:0);ctx.drawImage(workerSprite,-width/2,-height*.04,width,height);ctx.restore();
+  }
   if(working){
    ctx.save();ctx.translate(width*.28,-height*.39);ctx.rotate(player.target==="ore"?-.95+swing*.9:-.35+swing*.22);
    ctx.lineCap="round";strokePath([[0,0],[0,-31]],"#33271d",5);strokePath([[0,-29],[-12,-34],[13,-34]],"#73776b",4);ctx.restore();
    if(player.target==="ore"&&swing>.88){ctx.globalAlpha=.9;ctx.strokeStyle="#ffd27c";ctx.lineWidth=2;ctx.beginPath();ctx.arc(width*.28,-height*.39,17,-1.1,-.1);ctx.stroke();ctx.globalAlpha=1;}
-  }else if(moving){
-   ctx.globalAlpha=.8;ctx.strokeStyle="#9a784c";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-width*.27,-height*.32);ctx.lineTo(-width*.31+stride*2,-height*.12);ctx.stroke();ctx.globalAlpha=1;
   }
  }else{
   ctx.fillStyle="#d58b32";ctx.fillRect(-11,-67,22,35);ctx.beginPath();ctx.arc(0,-76,10,0,7);ctx.fillStyle="#d8a16d";ctx.fill();
@@ -457,7 +527,9 @@ function startAction(key){
   if(state.objective.generator){notify("O gerador A-03 já foi recuperado.");return;}
   if(state.objective.waste<20||state.objective.scrap<15||state.objective.ore<10){notify("Antes de recuperar o gerador, conclua os 3 objetivos de coleta.");setStatus("Requisitos: 20 resíduos, 15 sucatas e 10 minérios.");return;}
  }
- player.target=key;player.phase="walk";player.work=0;sound("click");const p=worldPoint(a.pos);player.facingLeft=p.x<player.x*worldW/1280;setActivity(true,"Caminhando até "+a.short+"...","O trabalhador está se deslocando até o alvo.");$("activityBar").style.width="0%";setStatus("Caminhando até "+a.name+".");
+ const dest=nearestWalkable(a.pos[0],a.pos[1]);
+ if(!pathIsWalkable(player.x,player.y,dest.x,dest.y)){notify("Não há caminho livre até esse ponto.");return;}
+ player.target=key;player.phase="walk";player.work=0;sound("click");const p=worldPoint([dest.x,dest.y]);player.facingLeft=p.x<player.x*worldW/1280;TASKS[key]._walkPos=[dest.x,dest.y];setActivity(true,"Caminhando até "+a.short+"...","O trabalhador está se deslocando até o alvo.");$("activityBar").style.width="0%";setStatus("Caminhando até "+a.name+".");
 }
 function setActivity(show,title,sub){$("activity").classList.toggle("show",show);$("activityTitle").textContent=title;$("activitySub").textContent=sub;}
 function finishAction(){
@@ -482,7 +554,7 @@ function finishAction(){
 function tick(now){
  const dt=Math.min((now-last)/1000,.05);last=now;ambientTime+=dt;
  if(player.phase==="walk"&&player.target){
-  const p=worldPoint(TASKS[player.target].pos),tx=p.x/worldW*1280,ty=(p.y+26)/worldH*720,dx=tx-player.x,dy=ty-player.y,dist=Math.hypot(dx,dy);
+  const p=worldPoint(TASKS[player.target]._walkPos||TASKS[player.target].pos),tx=p.x/worldW*1280,ty=(p.y+10)/worldH*720,dx=tx-player.x,dy=ty-player.y,dist=Math.hypot(dx,dy);
   player.facingLeft=dx<0;player.walkCycle+=dt*13*(effect("logistics_step")?1.2:1);if(now-lastFootstep>420){sound("walk");lastFootstep=now;}
   const speed=185*(effect("logistics_step")?1.2:1);
   if(dist<6){player.x=tx;player.y=ty;player.phase="work";player.work=0;const a=TASKS[player.target];sound(player.target==="ore"?"mine":player.target==="waste"?"clean":player.target==="generator"?"repair":"scrap");setActivity(true,"Trabalhando: "+a.short,"Preparando equipamento...");}
@@ -612,8 +684,10 @@ canvas.addEventListener("click",e=>{
  Object.entries(TASKS).forEach(([key,a])=>{const d=Math.hypot(a.pos[0]-x,a.pos[1]-y);if(d<dist){dist=d;nearest=key;}});
  if(dist<65){startAction(nearest);return;}
  if(player.phase==="work"){notify("O trabalhador está ocupado.");return;}
- player.target=null;player.moveTarget={x,y};player.phase="move";player.work=0;
- setActivity(false);sound("click");setStatus("Caminhando até o local indicado.");
+ const dest=nearestWalkable(x,y);
+ if(!pathIsWalkable(player.x,player.y,dest.x,dest.y)){notify("Esse caminho está bloqueado. Clique em outra parte do piso.");return;}
+ player.target=null;player.moveTarget=dest;player.phase="move";player.work=0;
+ setActivity(false);sound("click");setStatus("Caminhando pelo piso até o local indicado.");
 });
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>openModal(b.dataset.tab)));
 $("settingsBtn").addEventListener("click",()=>openModal("Configurações"));
