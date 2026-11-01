@@ -489,7 +489,7 @@ function startAction(key){
  }
  const dest=nearestWalkable(TASKS[key].pos[0],TASKS[key].pos[1]);
  if(!pathIsWalkable(player.x,player.y,dest.x,dest.y)){notify("Não há caminho livre até esse ponto.");return;}
- player.target=taskKey;player.phase="walk";player.work=0;sound("click");const p=worldPoint([dest.x,dest.y]);player.facingLeft=p.x<player.x*worldW/1280;TASKS[key]._walkPos=[dest.x,dest.y];setActivity(true,"Caminhando até "+a.short+"...","O trabalhador está se deslocando até o alvo.");$("activityBar").style.width="0%";setStatus("Caminhando até "+a.name+".");
+ player.target=taskKey;player.phase="walk";player.work=0;sound("click");const p=worldPoint([dest.x,dest.y]);player.facingLeft=p.x<player.x*worldW/1280;TASKS[taskKey]._walkPos=[dest.x,dest.y];setActivity(true,"Caminhando até "+a.short+"...","O trabalhador está se deslocando até o alvo.");$("activityBar").style.width="0%";setStatus("Caminhando até "+a.name+".");
 }
 function setActivity(show,title,sub){$("activity").classList.toggle("show",show);$("activityTitle").textContent=title;$("activitySub").textContent=sub;}
 function finishAction(){
@@ -640,9 +640,9 @@ canvas.addEventListener("click",e=>{
  const r=canvas.getBoundingClientRect();
  const x=Math.max(18,Math.min(1262,(e.clientX-r.left)/r.width*1280));
  const y=Math.max(35,Math.min(690,(e.clientY-r.top)/r.height*720));
- let nearest="",dist=Infinity;
- Object.entries(TASKS).forEach(([key,a])=>{const d=Math.hypot(a.pos[0]-x,a.pos[1]-y);if(d<dist){dist=d;nearest=key;}});
- if(dist<65){startAction(nearest);return;}
+ let nearest="",dist=Infinity,hitRadius=65;
+ Object.entries(TASKS).forEach(([key,a])=>{const d=Math.hypot(a.pos[0]-x,a.pos[1]-y);if(d<dist){dist=d;nearest=key;hitRadius=key==="scrap"?118:(key==="ore"||key==="ore2"?88:65);}});
+ if(dist<hitRadius){startAction(nearest);return;}
  if(player.phase==="work"){notify("O trabalhador está ocupado.");return;}
  const dest=nearestWalkable(x,y);
  if(!pathIsWalkable(player.x,player.y,dest.x,dest.y)){notify("Esse caminho está bloqueado. Clique em outra parte do piso.");return;}
