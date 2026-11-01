@@ -191,6 +191,39 @@ button{font:inherit;color:inherit;cursor:pointer}
  .settings-button{width:30px;height:30px;flex-basis:30px;margin-left:3px;font-size:18px}
 }
 
+
+/* Resource strip: illustrated metallic icons and a detached settings control */
+.top-hud-cluster{position:absolute;z-index:12;right:18px;top:16px;display:flex;align-items:center;gap:13px}
+.top-hud-cluster .top-resource-bar{position:static;right:auto;top:auto;gap:0;padding:5px 8px;background:linear-gradient(180deg,#181a19f7,#24221df5);border:1px solid #89744e;border-radius:10px;box-shadow:0 5px 16px #000b}
+.top-hud-cluster .top-resource{min-width:100px;gap:8px;padding:3px 12px;border-right:1px solid #625a4c}
+.top-hud-cluster .top-resource:last-child{border-right:0}
+.top-hud-cluster .ri{width:34px;height:38px;display:grid;place-items:center;filter:drop-shadow(0 2px 2px #000)}
+.top-hud-cluster .ri svg{width:33px;height:36px;display:block;overflow:visible}
+.top-hud-cluster .top-resource strong{font-size:19px;color:#f4f0e8}
+.top-hud-cluster .top-resource small{font-size:8px;color:#a9a49a;letter-spacing:.45px}
+.top-hud-cluster .settings-button{width:52px;height:52px;flex:0 0 52px;margin:0;border:1px solid #a58a58;border-radius:9px;background:linear-gradient(145deg,#383329,#171817);color:#e8c989;display:grid;place-items:center;box-shadow:0 4px 12px #000a,inset 0 1px #ffffff22}
+.top-hud-cluster .settings-button svg{width:29px;height:29px;filter:drop-shadow(0 1px 2px #000)}
+.top-hud-cluster .settings-button:hover{border-color:#f3ca75;filter:brightness(1.15)}
+@media(max-width:900px){
+ .top-hud-cluster{right:12px;top:12px;gap:9px}
+ .top-hud-cluster .top-resource{min-width:76px;padding:2px 7px;gap:5px}
+ .top-hud-cluster .ri{width:26px;height:30px}
+ .top-hud-cluster .ri svg{width:25px;height:28px}
+ .top-hud-cluster .top-resource strong{font-size:16px}
+ .top-hud-cluster .settings-button{width:42px;height:42px;flex-basis:42px}
+}
+@media(max-width:600px){
+ .top-hud-cluster{right:6px;top:6px;gap:5px}
+ .top-hud-cluster .top-resource-bar{padding:2px 3px}
+ .top-hud-cluster .top-resource{min-width:0;padding:1px 4px;gap:2px}
+ .top-hud-cluster .ri{width:18px;height:22px}
+ .top-hud-cluster .ri svg{width:18px;height:21px}
+ .top-hud-cluster .top-resource strong{font-size:11px}
+ .top-hud-cluster .top-resource small{font-size:6px}
+ .top-hud-cluster .settings-button{width:31px;height:31px;flex-basis:31px}
+ .top-hud-cluster .settings-button svg{width:19px;height:19px}
+}
+
 </style>
 </head>
 <body>
@@ -201,12 +234,14 @@ button{font:inherit;color:inherit;cursor:pointer}
  <div class="top-actions"><button class="top-action" id="soundBtn" title="Som ligado/desligado">🔊</button><button class="top-action" id="saveBtn" title="Salvar">▣</button><button class="top-action" id="resetBtn" title="Novo jogo">⟳</button></div>
 </header>
 <main class="main">
+ <div class="top-hud-cluster">
  <div class="top-resource-bar" aria-label="Recursos armazenados">
-  <div class="top-resource"><span class="ri">🪨</span><div><strong id="topOre">0</strong><small>Minério</small></div></div>
-  <div class="top-resource"><span class="ri">⚙️</span><div><strong id="topScrap">0</strong><small>Sucata</small></div></div>
-  <div class="top-resource"><span class="ri">🔩</span><div><strong id="topParts">0</strong><small>Peças</small></div></div>
-  <div class="top-resource"><span class="ri">☣️</span><div><strong id="topWaste">0</strong><small>Resíduos</small></div></div>
-  <button class="settings-button" id="settingsBtn" type="button" aria-label="Configurações" title="Configurações">⚙</button>
+  <div class="top-resource"><span class="ri"><svg viewBox="0 0 40 44" aria-hidden="true"><defs><linearGradient id="oreA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".42" stop-color="#bfc4ce"/><stop offset="1" stop-color="#666d79"/></linearGradient><linearGradient id="oreB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e9edf3"/><stop offset="1" stop-color="#858c98"/></linearGradient></defs><path d="M18 2 28 8 37 26 29 40 10 39 2 25 8 8Z" fill="url(#oreA)" stroke="#4e535c" stroke-width="1.2"/><path d="M18 2 20 22 8 8Z" fill="#fff" opacity=".68"/><path d="M18 2 28 8 20 22Z" fill="#dfe4ec"/><path d="M8 8 20 22 2 25Z" fill="url(#oreB)"/><path d="M20 22 37 26 29 40Z" fill="#727986"/><path d="M2 25 20 22 10 39Z" fill="#aeb5c0"/></svg></span><div><strong id="topOre">0</strong><small>Minério</small></div></div>
+  <div class="top-resource"><span class="ri"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="gearA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0ff"/><stop offset=".48" stop-color="#b9a9c9"/><stop offset="1" stop-color="#685c78"/></linearGradient></defs><path d="M16 2h8l1.3 5 4 1.7 4.3-2.3 4 7-4 3.3v5l4 3.3-4 7-4.7-2.1-3.6 1.7L24 38h-8l-1.3-5.1-4-1.7-4.3 2.3-4-7 4-3.3v-5l-4-3.3 4-7 4.7 2.1 3.6-1.7Z" fill="url(#gearA)" stroke="#51475d" stroke-width="1.2"/><circle cx="20" cy="20" r="7.2" fill="#24232a" stroke="#ddd0e9" stroke-width="2"/></svg></span><div><strong id="topScrap">0</strong><small>Sucata</small></div></div>
+  <div class="top-resource"><span class="ri"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="partsA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e9e6ef"/><stop offset=".45" stop-color="#9994a6"/><stop offset="1" stop-color="#514d5a"/></linearGradient></defs><path d="m5 8 8-5 22 27-8 6Z" fill="url(#partsA)" stroke="#48434d"/><path d="m5 8 8-5 5 6-8 6Z" fill="#e2deea"/><path d="m15 21 8-6 5 6-8 6Z" fill="#c4bfce"/><path d="m25 32 8-5 3 4-8 6Z" fill="#ded9e5"/></svg></span><div><strong id="topParts">0</strong><small>Peças</small></div></div>
+  <div class="top-resource"><span class="ri"><svg viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="wasteA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffd35d"/><stop offset="1" stop-color="#d98221"/></linearGradient></defs><circle cx="20" cy="20" r="17" fill="url(#wasteA)" stroke="#6e471a" stroke-width="1.5"/><g fill="#392c19"><circle cx="20" cy="20" r="3.2"/><path d="M18.1 15.9 14 9.4c3.1-2.2 7.1-2.2 10.2 0l-4.1 6.5Z"/><path d="m15.3 22.2-7.7 1.1c-.7-3.7 1.1-7.3 4.1-9.1l3.6 8Z"/><path d="m24.7 22.2 7.7 1.1c.7-3.7-1.1-7.3-4.1-9.1l-3.6 8Z"/><path d="m17.2 24.2-3.1 7.2c3.3 1.9 7.4 1.9 10.7 0l-3.1-7.2Z"/></g></svg></span><div><strong id="topWaste">0</strong><small>Resíduos</small></div></div>
+ </div>
+ <button class="settings-button" id="settingsBtn" type="button" aria-label="Configurações" title="Configurações"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M16 2h8l1.2 5 3.6 1.5 4.5-2.2 4 6.8-3.8 3.4v4.8l3.8 3.4-4 6.8-4.5-2.2-3.6 1.5L24 38h-8l-1.2-5-3.6-1.5-4.5 2.2-4-6.8 3.8-3.4v-4.8l-3.8-3.4 4-6.8 4.5 2.2 3.6-1.5Z" fill="#d4b879" stroke="#594a2c" stroke-width="1.4"/><circle cx="20" cy="20" r="7" fill="#26251f" stroke="#f0d9a0" stroke-width="2.5"/></svg></button>
  </div>
  <nav class="bottom-nav" aria-label="Navegação principal">
   <button class="active" data-action="Mapa"><span class="nav-icon">⛏</span><span class="nav-label">Coleta</span></button>
@@ -492,6 +527,11 @@ function openModal(tab){
   $("modalBody").innerHTML='<p class="muted">Ajustes básicos da sua experiência no pátio.</p><div class="modal-grid"><div class="card"><h3>Áudio</h3><p>Ative ou desative os efeitos sonoros do jogo.</p><button id="settingsSound">' + (soundEnabled?"Desativar som":"Ativar som") + '</button></div><div class="card"><h3>Progresso</h3><p>Salve manualmente seu progresso neste navegador.</p><button id="settingsSave">SALVAR JOGO</button></div></div>';
   $("modalBody").querySelector("#settingsSound").addEventListener("click",()=>{soundEnabled=!soundEnabled;$("settingsSound").textContent=soundEnabled?"Desativar som":"Ativar som";$("soundBtn").textContent=soundEnabled?"🔊":"🔇";if(soundEnabled)sound("click");});
   $("modalBody").querySelector("#settingsSave").addEventListener("click",()=>{save();notify("Jogo salvo com sucesso.");});
+ }else if(tab==="Configurações"){
+  $("modalBody").innerHTML='<p class="muted">Ajustes da sua jornada no pátio A-03.</p>';
+  $("modalBody").appendChild(makeCard("Áudio",soundEnabled?"Efeitos sonoros ligados.":"Efeitos sonoros desligados.",soundEnabled?"Ligado":"Desligado",()=>{soundEnabled=!soundEnabled;$("soundBtn").textContent=soundEnabled?"🔊":"🔇";openModal("Configurações");}));
+  $("modalBody").appendChild(makeCard("Salvar progresso","Guarda seu progresso neste navegador.","Salvar agora",()=>{save();openModal("Configurações");}));
+  $("modalBody").appendChild(makeCard("Nova jornada","Reinicia o progresso salvo neste navegador.","Atenção: ação irreversível",()=>{$("resetBtn").click();closeModal();}));
  }else if(tab==="Base"){
   $("modalBody").appendChild(makeCard("Armazém","Materiais armazenados: "+Object.values(state.resources).reduce((a,b)=>a+b,0)+" unidades.","Operacional",null));
   $("modalBody").appendChild(makeCard("Bancada de manutenção","Fabricação e reparo de equipamentos.","Próxima melhoria",null));
