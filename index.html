@@ -42,6 +42,31 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tree-intro{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:linear-gradient(90deg,#35291a,#191e18);border:1px solid #8c632d;border-radius:8px;margin-bottom:12px}.points{font-weight:900;color:#ffcf60;font-size:17px}.tree-grid{display:grid;grid-template-columns:repeat(5,minmax(110px,1fr));gap:12px;overflow-x:auto;padding:4px 2px 12px}.branch{background:linear-gradient(180deg,#20271f,#141914);border:1px solid #695638;border-radius:9px;padding:9px;min-width:0;min-width:110px}.branch h3{font-size:11px;color:#e8bb65;margin:0 0 12px;text-align:center;white-space:nowrap}.node{position:relative;border:1px solid #63563d;border-radius:9px;padding:7px 5px;margin:14px auto 10px;background:linear-gradient(145deg,#343b30,#1a201a);width:76px;height:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:help;box-shadow:0 4px 8px #0006}.node:before{content:"";position:absolute;left:50%;top:-16px;height:15px;border-left:2px solid #98733e}.node:first-of-type:before{display:none}.node strong{display:block;font-size:22px;line-height:1.1;color:#f5d99d}.node p{display:none}.node .node-meta{font-size:8px;color:#e4b85e;margin-top:4px;text-align:center}.node button{width:100%;font-size:8px;padding:5px 2px;margin-top:4px;white-space:nowrap}.node.unlocked{border-color:#9ac36a;background:linear-gradient(145deg,#405438,#1c2a1c);box-shadow:0 0 12px #8fc45b33}.node.locked{opacity:.48;filter:grayscale(.65)}.node[title]:hover{border-color:#ffd36b;transform:scale(1.06);z-index:2}.branch h3{display:flex;align-items:center;justify-content:center;gap:4px}
 .skill-tooltip{position:fixed;z-index:1000;max-width:220px;padding:8px 10px;background:#10150f;border:1px solid #d0a14d;border-radius:7px;color:#f4ead5;font-size:11px;line-height:1.4;pointer-events:none;box-shadow:0 8px 20px #000b;display:none}
 .tree-legend{font-size:10px;color:var(--muted);margin:0 0 10px}
+/* IRONWORKS skill-tree visual pass: connected, icon-led nodes that match the painted industrial world */
+.modal{width:min(900px,calc(100% - 34px))}
+.tree-intro{background:linear-gradient(90deg,#302719,#171c17);border-color:#896638}
+.tree-grid{grid-template-columns:repeat(5,minmax(125px,1fr));gap:12px;overflow:auto;align-items:stretch;padding:8px 4px 18px}
+.branch{position:relative;min-width:125px;border:1px solid #665337;background:linear-gradient(180deg,#22271fdd,#121712ee);border-radius:10px;padding:10px 7px 18px;overflow:visible}
+.branch h3{position:relative;z-index:2;min-height:30px;margin:0 0 18px;color:#e8bb65;font-size:11px;white-space:normal;text-align:center}
+.branch:after{content:"";position:absolute;top:57px;bottom:34px;left:50%;width:2px;transform:translateX(-50%);background:linear-gradient(#9c7947aa,#71604455);z-index:0}
+.node{position:relative;z-index:1;width:58px;height:58px;min-width:58px;margin:0 auto 42px;padding:0;border:2px solid #8c8c7e;border-radius:50%;background:radial-gradient(circle at 35% 28%,#343b31,#151a16 72%);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px #0009;transition:transform .16s,border-color .16s,box-shadow .16s}
+.node:before{display:none}
+.node strong{font-size:23px;line-height:1;color:#d7d0bd;font-weight:600}
+.node p{display:none}
+.node .node-meta{position:absolute;top:61px;left:50%;transform:translateX(-50%);white-space:nowrap;border:1px solid #827044;border-radius:20px;background:#111711;padding:2px 7px;color:#e4c36e;font-size:8px;min-width:45px;text-align:center}
+.node button{position:absolute;top:82px;left:50%;transform:translateX(-50%);width:76px;margin:0;padding:5px 3px;border-radius:12px;border:1px solid #8d7144;background:#332b1e;color:#f2d18a;font-size:8px;letter-spacing:.3px}
+.node button:disabled{opacity:.52;background:#242821;color:#a49b83;border-color:#555847}
+.node.unlocked{border-color:#b4d17a;background:radial-gradient(circle at 35% 28%,#647d45,#26351f 75%);box-shadow:0 0 15px #9fc65a55}
+.node.unlocked strong{color:#fff0c1}
+.node.locked{opacity:.55;filter:grayscale(.55)}
+.node[title]:hover{transform:scale(1.1);border-color:#f2c768;box-shadow:0 0 18px #e8b45166}
+.branch:nth-child(1) .node.unlocked{border-color:#a5c66b}
+.branch:nth-child(2) .node.unlocked{border-color:#79b9a2}
+.branch:nth-child(3) .node.unlocked{border-color:#d0a05c}
+.branch:nth-child(4) .node.unlocked{border-color:#d28a4c}
+.branch:nth-child(5) .node.unlocked{border-color:#8db9b0}
+.skill-tooltip{display:none}
+@media(max-width:700px){.tree-grid{grid-template-columns:repeat(5,minmax(118px,1fr));}.modal{width:calc(100% - 16px)}}
 @media(max-width:930px){.brand{min-width:160px}.brand-name{font-size:19px}.nav button{padding:9px 8px;font-size:10px}.left-stack{width:210px}.right-stack{width:225px}.bottom-inventory{width:calc(100% - 450px);min-width:360px}}
 @media(max-width:700px){body{overflow:auto}#app{height:auto;min-height:100vh}.topbar{height:auto;min-height:60px;flex-wrap:wrap}.brand{flex:1}.nav{order:3;flex-basis:100%;overflow-x:auto}.main{height:850px;flex:none}.left-stack{width:180px}.right-stack{width:180px;top:310px}.skills-summary{display:none}.bottom-inventory{width:calc(100% - 20px);min-width:0;overflow-x:auto}.status{bottom:85px}.activity{top:55%}.tree-grid{grid-template-columns:1fr 1fr}}
 </style>
@@ -176,11 +201,18 @@ function drawGenerator(){
 function drawTargetMarkers(){
  Object.entries(TASKS).forEach(([key,a])=>{
   if(key==="generator"&&state.objective.generator)return;
-  const p=worldPoint(a.pos),hot=player.target===key;
-  ctx.save();ctx.beginPath();ctx.ellipse(p.x,p.y+6,hot?37:29,hot?18:14,0,0,Math.PI*2);ctx.fillStyle=hot?"#f4b33b55":"#f0b33b20";ctx.fill();ctx.strokeStyle=hot?"#ffd46b":"#e9bd5a";ctx.lineWidth=hot?3:1.8;ctx.stroke();
-  roundRect(p.x-15,p.y-40,30,28,7,"#171a15eF","#d29a43");ctx.fillStyle="#ffe1a1";ctx.font="bold 16px Arial";ctx.textAlign="center";ctx.fillText(a.icon,p.x,p.y-20);
-  ctx.fillStyle="#151912e8";const label=key==="generator"?"GERADOR A-03":a.short;ctx.font="bold 10px Arial";const tw=ctx.measureText(label).width+14;roundRect(p.x-tw/2,p.y+27,tw,18,4,"#151912db",null);ctx.fillStyle="#f5e8ca";ctx.fillText(label,p.x,p.y+40);
-  if(key==="generator"&&!state.objective.generator){ctx.fillStyle="#ffca58";ctx.font="bold 9px Arial";ctx.fillText("RECUPERAR",p.x,p.y+57);}
+  const p=worldPoint(a.pos),hot=player.target===key,pulse=.5+.5*Math.sin(ambientTime*2.4+(a.pos[0]*.01));
+  ctx.save();
+  // Soft amber/green glow anchored to the actual resource instead of a large selection ring.
+  const radius=(hot?52:34)+pulse*7;
+  const glow=ctx.createRadialGradient(p.x,p.y,2,p.x,p.y,radius);
+  glow.addColorStop(0,hot?"rgba(255,204,105,.38)":"rgba(224,177,91,.19)");
+  glow.addColorStop(.55,hot?"rgba(228,167,75,.14)":"rgba(146,159,92,.08)");
+  glow.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=glow;ctx.beginPath();ctx.arc(p.x,p.y,radius,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=.68+.25*pulse;ctx.fillStyle=hot?"#ffe2a1":"#f3d28a";ctx.font="bold "+(hot?21:17)+"px Arial";ctx.textAlign="center";ctx.shadowColor="#f2b94f";ctx.shadowBlur=hot?17:9;ctx.fillText(a.icon,p.x,p.y-13);ctx.shadowBlur=0;
+  ctx.globalAlpha=1;ctx.fillStyle="#151912d9";const label=key==="generator"?"GERADOR A-03":a.short;ctx.font="bold 10px Arial";const tw=ctx.measureText(label).width+14;roundRect(p.x-tw/2,p.y+20,tw,18,4,"#151912db",null);ctx.fillStyle="#f5e8ca";ctx.fillText(label,p.x,p.y+33);
+  if(key==="generator"&&!state.objective.generator){ctx.fillStyle="#ffca58";ctx.font="bold 9px Arial";ctx.fillText("RECUPERAR",p.x,p.y+49);}
   ctx.restore();
  });
 }
@@ -188,24 +220,39 @@ function lineLimb(x1,y1,x2,y2,width,color){strokePath([[x1,y1],[x2,y2]],"#201f1a
 function drawCharacter(){
  const x=player.x*worldW/1280,y=player.y*worldH/720;
  const moving=player.phase==="walk",working=player.phase==="work";
- const stride=moving?Math.sin(player.walkCycle)*2.8:0;
- const bob=moving?Math.abs(Math.sin(player.walkCycle*2))*3:working?Math.sin(ambientTime*12)*1.5:0;
- const lean= moving ? Math.sin(player.walkCycle)*.035 : working ? Math.sin(ambientTime*9)*.025 : 0;
+ const cycle=player.walkCycle,stride=moving?Math.sin(cycle):0;
+ const bob=moving?Math.abs(Math.sin(cycle*2))*2.4:working?Math.sin(ambientTime*12)*1.2:0;
+ const toolSwing=working?Math.sin(ambientTime*(player.target==="ore"?9:6)):0;
  ctx.save();ctx.translate(x,y+bob);ctx.scale(player.facingLeft?-1:1,1);
- // Contact shadow and selected-worker ring
  ctx.fillStyle="#090d0bb0";ctx.beginPath();ctx.ellipse(0,1,24,7,0,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle=working?"#f4c456":"#86b85b";ctx.lineWidth=2;ctx.globalAlpha=.75;ctx.beginPath();ctx.ellipse(0,2,29,9,0,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
  if(workerSprite.complete&&workerSprite.naturalWidth){
    const height=104,width=height*workerSprite.width/workerSprite.height;
-   ctx.translate(0,-height+7);
-   ctx.rotate(lean);
-   // The original painted worker is preserved; a subtle stride/bob/lean sells movement without replacing his art.
-   ctx.drawImage(workerSprite,-width/2+stride,-height*.04,width,height);
-   if(working){
-     const swing=Math.sin(ambientTime*(player.target==="ore"?17:11))*.055;
-     ctx.translate(width*.17,height*.48);ctx.rotate(swing);ctx.translate(-width*.17,-height*.48);
-     if(Math.random()<.22){ctx.globalAlpha=.7;ctx.fillStyle=player.target==="ore"?"#ffd47b":"#d5b16b";ctx.beginPath();ctx.arc(width*.28,height*.63,2+Math.random()*2,0,Math.PI*2);ctx.fill();}
+   ctx.translate(0,-height+7);ctx.rotate(moving?stride*.018:working?toolSwing*.012:0);
+   ctx.drawImage(workerSprite,-width/2,-height*.04,width,height);
+   // Articulated limbs layered over the painted worker: alternating gait and task-specific arm motion.
+   const legA=stride*8,legB=-legA,armWalk=-stride*7;
+   ctx.lineCap="round";ctx.lineJoin="round";
+   const limb=(pts,edge,fill,w)=>{strokePath(pts,edge,w+2.5);strokePath(pts,fill,w);};
+   // legs and boots
+   limb([[-5,-29],[-6+legA*.45,-15],[-7+legA,-4]],"#25231d","#42483c",6);
+   limb([[5,-29],[6+legB*.45,-15],[7+legB,-4]],"#25231d","#42483c",6);
+   limb([[-7+legA,-4],[1+legA,-3]],"#201c17","#282b25",5);
+   limb([[7+legB,-4],[15+legB,-3]],"#201c17","#282b25",5);
+   // arms: swinging during walking, reaching/working during collection
+   const leftHand=working?(player.target==="ore"?toolSwing*5:2+toolSwing*3):armWalk;
+   const rightHand=working?(player.target==="ore"?-8-toolSwing*8:8-toolSwing*4):-armWalk;
+   limb([[-10,-65],[-16+leftHand*.35,-51],[-17+leftHand,-39]],"#3a2a1d","#b96d32",6);
+   limb([[10,-65],[16+rightHand*.35,-51],[17+rightHand,-39]],"#3a2a1d","#c17a39",6);
+   ctx.fillStyle="#292a22";ctx.beginPath();ctx.arc(-17+leftHand,-39,3.5,0,Math.PI*2);ctx.fill();
+   ctx.beginPath();ctx.arc(17+rightHand,-39,3.5,0,Math.PI*2);ctx.fill();
+   // Pickaxe swings on ore; other jobs use a hand/tool reach motion.
+   if(working&&player.target==="ore"){
+    const hx=17+rightHand,hy=-39,angle=-.8+toolSwing*.8;
+    ctx.save();ctx.translate(hx,hy);ctx.rotate(angle);strokePath([[0,0],[0,-31]],"#35291e",5);strokePath([[0,-29],[-10,-34],[12,-34]],"#5c6257",4);ctx.restore();
+   }else if(working){
+    ctx.globalAlpha=.8;ctx.fillStyle="#e4b65e";ctx.beginPath();ctx.arc(17+rightHand,-39,2.2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
    }
+   if(working&&Math.random()<.16){ctx.globalAlpha=.8;ctx.fillStyle=player.target==="ore"?"#ffd47b":"#d5b16b";ctx.beginPath();ctx.arc(width*.25,height*.62,2+Math.random()*2,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
  }else{
    ctx.fillStyle="#d58b32";ctx.fillRect(-11,-67,22,35);ctx.beginPath();ctx.arc(0,-76,10,0,7);ctx.fillStyle="#d8a16d";ctx.fill();
  }
@@ -316,16 +363,18 @@ function openModal(tab){
 }
 function renderSkillTree(){
  const body=$("modalBody");
- body.innerHTML=`<div class="tree-intro"><div><b>Escolha seu caminho de especialização</b><div class="muted">Os pontos são permanentes. Cada nível de trabalhador concede 1 ponto; nos níveis 5 e 10 há bônus adicionais.</div></div><div class="points">✦ ${state.skillPoints} pontos</div></div><p class="tree-legend">Os nós seguem uma trilha: desbloqueie o primeiro para liberar os próximos. Você pode investir em mais de uma especialização.</p><div class="tree-grid" id="treeGrid"></div>`;
+ body.innerHTML=`<div class="tree-intro"><div><b>Escolha seu caminho de especialização</b><div class="muted">Desbloqueie habilidades conectadas para especializar seu trabalhador.</div></div><div class="points">✦ ${state.skillPoints} pontos</div></div><p class="tree-legend">Passe o cursor sobre um nó para ver o efeito. Os caminhos podem ser desenvolvidos em paralelo.</p><div class="tree-grid" id="treeGrid"></div>`;
  const grid=body.querySelector("#treeGrid");
- const branches=[["Mineração","⛏"],["Limpeza","☣"],["Engenharia","⚙"],["Mecânica","🔧"],["Logística","🎒"]];
+ const branches=[["Mineração","⛏"],["Limpeza","♻"],["Engenharia","⚙"],["Mecânica","🔧"],["Logística","🎒"]];
+ const glyphs={mine_yield:"⛏",mine_speed:"⌁",mine_vein:"◆",clean_yield:"♻",clean_speed:"≋",clean_recycle:"♧",eng_scrap:"⚙",eng_parts:"🔩",mech_repair:"🔧",mech_master:"✦",logistics_step:"➜",logistics_pack:"▣"};
  branches.forEach(([branch,icon])=>{
   const box=document.createElement("div");box.className="branch";box.innerHTML=`<h3>${icon} ${branch}</h3>`;
   NODE_DEFS.filter(n=>n.branch===branch).forEach(n=>{
    const own=unlocked(n.id),reqOk=!n.req||unlocked(n.req),can=state.skillPoints>=n.cost&&reqOk&&!own;
    const node=document.createElement("div");node.className="node "+(own?"unlocked":!reqOk?"locked":"");node.title=n.name+" — "+n.desc;
-   node.innerHTML=`<strong>${own?"✓ ":""}${n.name}</strong><p>${n.desc}</p><div class="node-meta">${own?"ADQUIRIDO":`CUSTO: ${n.cost} ponto(s)${!reqOk?" • REQUER NÓ ANTERIOR":""}`}</div>`;
-   const btn=document.createElement("button");btn.textContent=own?"OK":"ADQUIRIR";btn.disabled=!can;
+   node.setAttribute("aria-label",n.name+" — "+n.desc);
+   node.innerHTML=`<strong>${own?"✓":glyphs[n.id]||"✦"}</strong><div class="node-meta">${own?"ADQUIRIDO":n.cost+" PONTO"+(n.cost>1?"S":"")}</div>`;
+   const btn=document.createElement("button");btn.textContent=own?"DESBLOQUEADO":"DESBLOQUEAR";btn.disabled=!can;
    btn.onclick=()=>buyNode(n.id);node.appendChild(btn);box.appendChild(node);
   });
   grid.appendChild(box);
