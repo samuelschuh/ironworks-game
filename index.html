@@ -313,7 +313,7 @@ function finishAction(){
  if(key==="ore"&&effect("mine_vein")&&Math.random()<.2)amount+=2;
  if(key==="waste"&&effect("clean_recycle")&&Math.random()<.2)state.resources["Sucata"]+=1;
  if(key==="scrap"&&effect("eng_parts")&&Math.random()<.2)state.resources["Componentes"]+=1;
- state.resources[a.item]+=amount;if(!state.depletion)state.depletion={ore:0,scrap:0,waste:0,crate:0};state.depletion[key]=Math.min(8,(state.depletion[key]||0)+1);gainSkill(a.skill,a.xp);gainPlayer(8+amount*2);state.actions++;
+ state.resources[a.item]+=amount;if(!state.depletion)state.depletion={ore:0,scrap:0,waste:0,crate:0};state.depletion[key]=((state.depletion[key]||0)+1)%8;gainSkill(a.skill,a.xp);gainPlayer(8+amount*2);state.actions++;
  if(key==="waste")state.objective.waste+=amount;if(key==="scrap")state.objective.scrap+=amount;if(key==="ore")state.objective.ore+=amount;
  const p=worldPoint(a.pos);addParticles(p.x/ worldW*1280,p.y/worldH*720,key==="ore"?14:9,key==="ore"?"#ffc16a":key==="waste"?"#9fd5c3":"#e8b65f",1.2);
  player.phase="idle";player.target=null;setActivity(false);setStatus("+"+amount+" "+a.item+" • +"+a.xp+" XP em "+a.skill+".");notify("+"+amount+" "+a.item+"  |  +"+a.xp+" XP");renderAll();saveQuiet();
