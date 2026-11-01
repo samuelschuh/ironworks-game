@@ -54,7 +54,7 @@ button{font:inherit;color:inherit;cursor:pointer}
  <div class="top-actions"><button class="top-action" id="soundBtn" title="Som ligado/desligado">🔊</button><button class="top-action" id="saveBtn" title="Salvar">▣</button><button class="top-action" id="resetBtn" title="Novo jogo">⟳</button></div>
 </header>
 <main class="main">
- <canvas id="world"></canvas><div class="vignette"></div>
+ <canvas id="world"></canvas><button class="side-toggle left" id="toggleLeft" type="button" aria-label="Recolher painel esquerdo">‹</button><button class="side-toggle right" id="toggleRight" type="button" aria-label="Recolher painel direito">›</button><div class="vignette"></div>
  <section class="hud left-stack">
   <div class="panel player-card"><div class="avatar"></div><div style="flex:1;min-width:0"><div class="player-name">TRABALHADOR INDUSTRIAL</div><div class="level-line">Nível <span id="playerLevel">1</span> <span class="muted">• <span id="playerXp">0</span> / <span id="playerNeed">350</span> XP</span></div><div class="progress"><span id="playerBar"></span></div><div class="muted" style="margin-top:5px;color:#ffd06b">★ <b id="skillPoints">1</b> ponto(s) de habilidade</div></div></div>
   <div class="panel objectives"><div class="panel-title">♧ OBJETIVOS DA FASE</div><div class="muted" style="margin-bottom:8px">Zona Industrial • Fase 1</div>
@@ -72,7 +72,7 @@ button{font:inherit;color:inherit;cursor:pointer}
  </section>
  <section class="panel hud bottom-inventory"><div class="weight">🎒<br><span id="weight">0</span> / 120 kg</div><div id="resourceTray" style="display:flex;gap:6px;align-items:center;flex:1;justify-content:space-around"></div></section>
  <div class="panel hud activity" id="activity"><div class="activity-title" id="activityTitle">Trabalhando...</div><div class="activity-sub" id="activitySub">O trabalhador está executando a atividade.</div><div class="progress"><span id="activityBar"></span></div></div>
- <div class="panel hud status" id="status">Bem-vindo ao pátio A-03. Clique em um depósito para começar.</div><div class="toast" id="toast"></div>
+ <div class="panel hud status" id="status">Bem-vindo ao pátio A-03. Clique em um depósito para começar.</div><div class="toast" id="toast"></div><div class="skill-tooltip" id="skillTooltip"></div>
  <section class="panel modal" id="modal"><div class="modal-head"><h2 id="modalTitle">Habilidades</h2><button class="close" id="closeModal">Fechar ✕</button></div><div id="modalBody"></div></section>
 </main>
 </div>
@@ -323,7 +323,7 @@ function renderSkillTree(){
   const box=document.createElement("div");box.className="branch";box.innerHTML=`<h3>${icon} ${branch}</h3>`;
   NODE_DEFS.filter(n=>n.branch===branch).forEach(n=>{
    const own=unlocked(n.id),reqOk=!n.req||unlocked(n.req),can=state.skillPoints>=n.cost&&reqOk&&!own;
-   const node=document.createElement("div");node.className="node "+(own?"unlocked":!reqOk?"locked":"");
+   const node=document.createElement("div");node.className="node "+(own?"unlocked":!reqOk?"locked":"");node.title=n.name+" — "+n.desc;
    node.innerHTML=`<strong>${own?"✓ ":""}${n.name}</strong><p>${n.desc}</p><div class="node-meta">${own?"ADQUIRIDO":`CUSTO: ${n.cost} ponto(s)${!reqOk?" • REQUER NÓ ANTERIOR":""}`}</div>`;
    const btn=document.createElement("button");btn.textContent=own?"OK":"ADQUIRIR";btn.disabled=!can;
    btn.onclick=()=>buyNode(n.id);node.appendChild(btn);box.appendChild(node);
@@ -368,8 +368,9 @@ canvas.addEventListener("click",e=>{
  if(dist<65){startAction(nearest);}else setStatus("Clique em um recurso destacado ou no gerador ⚡ para interagir.");
 });
 document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>openModal(b.dataset.tab)));
-$("toggleLeft").addEventListener("click",()=>{const el=document.querySelector(".left-stack");el.classList.toggle("collapsed");$("toggleLeft").textContent=el.classList.contains("collapsed")?"›":"‹";});
-$("toggleRight").addEventListener("click",()=>{const el=document.querySelector(".right-stack");el.classList.toggle("collapsed");$("toggleRight").textContent=el.classList.contains("collapsed")?"‹":"›";});
+const toggleLeft=$("toggleLeft"),toggleRight=$("toggleRight");
+if(toggleLeft)toggleLeft.addEventListener("click",()=>{const el=document.querySelector(".left-stack");el.classList.toggle("collapsed");toggleLeft.textContent=el.classList.contains("collapsed")?"›":"‹";});
+if(toggleRight)toggleRight.addEventListener("click",()=>{const el=document.querySelector(".right-stack");el.classList.toggle("collapsed");toggleRight.textContent=el.classList.contains("collapsed")?"‹":"›";});
 const tooltip=$("skillTooltip");document.addEventListener("pointerover",e=>{const n=e.target.closest(".node[title]");if(!n)return;tooltip.textContent=n.title;tooltip.style.display="block";});
 document.addEventListener("pointermove",e=>{if(tooltip.style.display==="block"){tooltip.style.left=Math.min(innerWidth-235,e.clientX+14)+"px";tooltip.style.top=Math.min(innerHeight-90,e.clientY+14)+"px";}});
 document.addEventListener("pointerout",e=>{if(e.target.closest(".node[title]"))tooltip.style.display="none";});
