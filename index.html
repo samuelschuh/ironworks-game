@@ -468,7 +468,7 @@ function drawRigPart(layer,w,h,anchorX,anchorY,angle,scale=1){
 }
 function drawCharacter(){
  const x=player.x*worldW/1280,y=player.y*worldH/720;
- const moving=player.phase==="walk",working=player.phase==="work";
+ const moving=player.phase==="walk"||player.phase==="move",working=player.phase==="work";
  const stride=moving?Math.sin(player.walkCycle):0;
  const bob=moving?Math.abs(Math.sin(player.walkCycle*2))*2.2:working?Math.sin(ambientTime*11)*1:0;
  const swing=working?Math.sin(ambientTime*(player.target==="ore"?8.5:5.5)):0;
@@ -556,18 +556,18 @@ function finishAction(){
 function tick(now){
  const dt=Math.min((now-last)/1000,.05);last=now;ambientTime+=dt;
  if(player.phase==="walk"&&player.target){
-  const p=worldPoint(TASKS[player.target]._walkPos||TASKS[player.target].pos),tx=p.x/worldW*1280,ty=(p.y+10)/worldH*720,dx=tx-player.x,dy=ty-player.y,dist=Math.hypot(dx,dy);
+  const goal=TASKS[player.target]._walkPos||nearestWalkable(TASKS[player.target].pos[0],TASKS[player.target].pos[1]),tx=goal[0]??goal.x,ty=goal[1]??goal.y,dx=tx-player.x,dy=ty-player.y,dist=Math.hypot(dx,dy);
   player.facingLeft=dx<0;player.walkCycle+=dt*13*(effect("logistics_step")?1.2:1);if(now-lastFootstep>420){sound("walk");lastFootstep=now;}
   const speed=185*(effect("logistics_step")?1.2:1);
   if(dist<6){player.x=tx;player.y=ty;player.phase="work";player.work=0;const a=TASKS[player.target];sound(player.target==="ore"?"mine":player.target==="waste"?"clean":player.target==="generator"?"repair":"scrap");setActivity(true,"Trabalhando: "+a.short,"Preparando equipamento...");}
-  else{player.x+=dx/dist*speed*dt;player.y+=dy/dist*speed*dt;}
+  else{const step=Math.min(dist,speed*dt),nx=player.x+dx/dist*step,ny=player.y+dy/dist*step;if(pathIsWalkable(player.x,player.y,nx,ny)){player.x=nx;player.y=ny;}else{player.phase="idle";player.target=null;setActivity(false);notify("Caminho bloqueado. Escolha outro ponto do piso.");}}
  }else if(player.phase==="move"&&player.moveTarget){
   const dx=player.moveTarget.x-player.x,dy=player.moveTarget.y-player.y,dist=Math.hypot(dx,dy);
   player.facingLeft=dx<0;player.walkCycle+=dt*13*(effect("logistics_step")?1.2:1);
   if(now-lastFootstep>420){sound("walk");lastFootstep=now;}
   const speed=185*(effect("logistics_step")?1.2:1);
   if(dist<5){player.x=player.moveTarget.x;player.y=player.moveTarget.y;player.moveTarget=null;player.phase="idle";setActivity(false);setStatus("Trabalhador chegou ao destino.");}
-  else{const step=Math.min(dist,speed*dt);player.x+=dx/dist*step;player.y+=dy/dist*step;}
+  else{const step=Math.min(dist,speed*dt),nx=player.x+dx/dist*step,ny=player.y+dy/dist*step;if(pathIsWalkable(player.x,player.y,nx,ny)){player.x=nx;player.y=ny;}else{player.moveTarget=null;player.phase="idle";notify("O caminho termina no limite do piso.");}}
  }else if(player.phase==="work"){
   const a=TASKS[player.target];let duration=a.time;
   if(player.target==="ore"&&effect("mine_speed"))duration*=.85;
