@@ -224,6 +224,13 @@ button{font:inherit;color:inherit;cursor:pointer}
  .top-hud-cluster .settings-button svg{width:19px;height:19px}
 }
 
+
+/* Metallic illustrated navigation icons — matching the resource bar artwork */
+.bottom-nav button .nav-icon{width:40px;height:40px;display:grid;place-items:center;font-size:0;line-height:1;color:#e6b75d;filter:drop-shadow(0 2px 2px #000b)}
+.bottom-nav button .nav-icon svg{display:block;width:100%;height:100%;overflow:visible}
+.bottom-nav button:hover .nav-icon,.bottom-nav button.active .nav-icon{filter:drop-shadow(0 0 5px #f4c76c99) drop-shadow(0 2px 2px #000)}
+@media(max-width:600px){.bottom-nav button .nav-icon{width:27px;height:27px}}
+
 </style>
 </head>
 <body>
@@ -244,11 +251,11 @@ button{font:inherit;color:inherit;cursor:pointer}
  <button class="settings-button" id="settingsBtn" type="button" aria-label="Configurações" title="Configurações"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M16 2h8l1.2 5 3.6 1.5 4.5-2.2 4 6.8-3.8 3.4v4.8l3.8 3.4-4 6.8-4.5-2.2-3.6 1.5L24 38h-8l-1.2-5-3.6-1.5-4.5 2.2-4-6.8 3.8-3.4v-4.8l-3.8-3.4 4-6.8 4.5 2.2 3.6-1.5Z" fill="#d4b879" stroke="#594a2c" stroke-width="1.4"/><circle cx="20" cy="20" r="7" fill="#26251f" stroke="#f0d9a0" stroke-width="2.5"/></svg></button>
  </div>
  <nav class="bottom-nav" aria-label="Navegação principal">
-  <button class="active" data-action="Mapa"><span class="nav-icon">⛏</span><span class="nav-label">Coleta</span></button>
-  <button data-action="Fabricação"><span class="nav-icon">🏭</span><span class="nav-label">Produção</span></button>
-  <button data-action="Base"><span class="nav-icon">⚡</span><span class="nav-label">Gerador</span></button>
-  <button data-action="Habilidades"><span class="nav-icon">♧</span><span class="nav-label">Habilidades</span></button>
-  <button data-action="Equipamentos"><span class="nav-icon">🎒</span><span class="nav-label">Inventário</span></button>
+  <button class="active" data-action="Mapa"><span class="nav-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="pickMetal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0b0"/><stop offset=".42" stop-color="#e2aa45"/><stop offset="1" stop-color="#80501c"/></linearGradient><linearGradient id="pickWood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d7a05b"/><stop offset="1" stop-color="#61391e"/></linearGradient></defs><path d="M21 24 27 27 13 46 7 42Z" fill="url(#pickWood)" stroke="#38271b" stroke-width="1.5"/><path d="M4 15Q12 4 27 5l16 4-3 8-15-3Q16 13 9 22Z" fill="url(#pickMetal)" stroke="#60421e" stroke-width="1.7"/><path d="m27 5 4 1-7 9-5-1Z" fill="#fff0b5" opacity=".7"/></svg></span><span class="nav-label">Coleta</span></button>
+  <button data-action="Fabricação"><span class="nav-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="factoryMetal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f3d28a"/><stop offset=".5" stop-color="#bd873c"/><stop offset="1" stop-color="#604321"/></linearGradient></defs><path d="M5 42V19l12 7V17l12 8V12h7v30Z" fill="url(#factoryMetal)" stroke="#49331d" stroke-width="2"/><path d="M30 12V4h7v8" fill="#9c6540" stroke="#49331d" stroke-width="1.5"/><g fill="#28271f" stroke="#e5bd72" stroke-width="1"><rect x="10" y="31" width="6" height="7" rx="1"/><rect x="22" y="31" width="6" height="7" rx="1"/><rect x="33" y="31" width="6" height="7" rx="1"/></g><path d="M4 43h40" stroke="#f2d08b" stroke-width="2.5"/></svg></span><span class="nav-label">Produção</span></button>
+  <button data-action="Base"><span class="nav-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="boltGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0a8"/><stop offset=".48" stop-color="#f1ad37"/><stop offset="1" stop-color="#99521b"/></linearGradient></defs><path d="M27 3 9 27h12l-2 18 20-27H26Z" fill="url(#boltGold)" stroke="#684018" stroke-width="2" stroke-linejoin="round"/><path d="m27 7-9 17h7l-1 10 11-16H25Z" fill="#fff2b9" opacity=".38"/></svg></span><span class="nav-label">Gerador</span></button>
+  <button data-action="Habilidades"><span class="nav-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="skillGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f9e2a2"/><stop offset=".55" stop-color="#c38d3c"/><stop offset="1" stop-color="#65451f"/></linearGradient></defs><g stroke="url(#skillGold)" stroke-width="4" stroke-linecap="round"><path d="M24 11v12M11 37l13-14 13 14M11 37V28M37 37V28"/></g><g fill="url(#skillGold)" stroke="#4b351d" stroke-width="1.5"><circle cx="24" cy="9" r="6"/><circle cx="10" cy="39" r="6"/><circle cx="38" cy="39" r="6"/><circle cx="24" cy="23" r="5"/></g><circle cx="24" cy="9" r="2" fill="#fff0bc"/></svg></span><span class="nav-label">Habilidades</span></button>
+  <button data-action="Equipamentos"><span class="nav-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bagLeather" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f3d18b"/><stop offset=".48" stop-color="#bb813b"/><stop offset="1" stop-color="#65401f"/></linearGradient></defs><path d="M16 14V10q0-7 8-7t8 7v4" fill="none" stroke="url(#bagLeather)" stroke-width="4"/><path d="M9 15h30l4 28H5Z" fill="url(#bagLeather)" stroke="#49311b" stroke-width="2"/><path d="M17 17v8q7 5 14 0v-8" fill="#6a4727" stroke="#f2d39a" stroke-width="1.5"/><rect x="18" y="30" width="12" height="8" rx="2" fill="#3b3022" stroke="#f2d39a" stroke-width="1.5"/><path d="M9 21h5M34 21h5" stroke="#fff0bd" stroke-width="1.5"/></svg></span><span class="nav-label">Inventário</span></button>
  </nav>
  <div class="right-rail" aria-label="Atalhos"><button type="button" data-open="Equipamentos" title="Inventário">🎒</button><button type="button" data-open="Missões" title="Objetivos">▤</button></div>
  <div class="virtual-pad" aria-hidden="true"><span></span><span>▲</span><span></span><span>◀</span><span class="pad-center"></span><span>▶</span><span></span><span>▼</span><span></span></div>
